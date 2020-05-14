@@ -5,12 +5,15 @@ let service = require('./user.service')
 // Each API may support multiple version. With this sample, we're getting
 // v3 of the blogger API, and using an API key to authenticate.
 
-exports.login = (req, res) => {
-   
+
+
+exports.google = (req, res) => {
+  console.log("origin url is",req.get('origin'))
+  console.log("host is base url is",req.get('host'))
 const oauth2Client = new google.auth.OAuth2(
-    '311992152127-fcvfo5857jfgo0ef9u113iqsc3muihlt.apps.googleusercontent.com',
-    'MKQR5jcMIW78qGLVkHsOnFdx',
-    'http://localhost:4200'
+    '63185176944-liii4cl4p1oj30suhi75ouekpdact3jo.apps.googleusercontent.com',
+    'asdasasdsada1232',
+    req.get('origin')
 );
 
 // generate a url that asks permissions for Blogger and Google Calendar scopes
@@ -33,31 +36,42 @@ console.log("url is",url)
 res.json({status:'success', url:url })
 }
 
+
+/**
+ * login user
+ */
+exports.login = (req, res) => {
+    service.login({emailId:req.body.emailId, password: req.body.password})
+    .then(response => {
+        res.json({status:'success',data:response})
+    })
+    .catch(err => {
+      console.log("Error in login the user",err);
+      if(err instanceof Error){
+          res.status(500).json({status:'Error',msg:err.message})
+      }
+
+      res.status(403).send({err})
+    })
+}
+
 exports.token = async (req, res)=>{
   console.log('came to get token',req.query);
   const oauth2Client = new google.auth.OAuth2(
-    '311992152127-fcvfo5857jfgo0ef9u113iqsc3muihlt.apps.googleusercontent.com',
-    'MKQR5jcMIW78qGLVkHsOnFdx',
-    'http://localhost:4200'
+    '63185176944-liii4cl4p1oj30suhi75ouekpdact3jo.apps.googleusercontent.com',
+    'yU2Y31miEpraEPmnGeP4avjE',
+    req.get('origin')
 );
 
-// var options = {
-//   uri: 'https://people.googleapis.com/v1/',
-//   qs: {
-//       access_token: 'xxxxx xxxxx' // -> uri + '?access_token=xxxxx%20xxxxx'
-//   },
-//   headers: {
-//       'User-Agent': 'Request-Promise'
-//   },
-//   json: true // Automatically parses the JSON string in the response
-// };
-
-// rp.get()
-  let code = req.query.code;
-  const {tokens} = await oauth2Client.getToken(code)
-  //console.log("tokens are",tokens)
-  console.log("support apis are",google.getSupportedAPIs())
-  res.json(tokens);
+  try {
+    let code = req.query.code;
+    const {tokens} = await oauth2Client.getToken(code)
+    console.log("support apis are",google.getSupportedAPIs())
+    res.json(tokens);
+  } catch(err) {
+    console.log("Error in getting the tokens",err)
+  }
+  
 }
 
 exports.getUserInfo = (req, res) => {
@@ -136,10 +150,13 @@ exports.authorizeUser = (req, res)=>{
 
 }
 
-
-
-
-
 exports.name = (req, res)=>{
   res.json({name:'satyam kumar'})
+}
+
+exports.createUser = (req, res) => {
+    console.log("req body is ",req.body);
+   
+    service.insertUser(req.body)
+    .then(response=>res.json({status:'sucess',msg:'User is Created'}))
 }

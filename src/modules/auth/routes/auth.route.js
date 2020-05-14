@@ -2,7 +2,11 @@ const express = require('express')
 const router = express.Router();
 let googleApi = require('../oauth/google.auth');
 
-router.get('/login',googleApi.login);
+router.get('/google',googleApi.google);
+
+router.post('/login',googleApi.login);
+
+router.post('/user',googleApi.createUser)
 
 router.get('/token', googleApi.token);
 

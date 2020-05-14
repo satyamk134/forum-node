@@ -14,7 +14,8 @@ var UserSchema = new Schema({
    role:{type:String, default:''},
    address: { type:String, default:""},
    mobileNo:{type:String, default:"" },
-   role: {type: String, default:'customer'}
+   role: {type: String, default:'customer'},
+   provider:{type:String, default:"local"}
 
 },{ _id : false,versionKey: false  });
 
