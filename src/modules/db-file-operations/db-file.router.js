@@ -1,13 +1,15 @@
 const express = require('express')
 const app = express();
 const router = express.Router();
-let chatController = require('./db-file-controller');
+let dbFileController = require('./db-file-controller');
 
 console.log("came to router")
-router.post('/user', chatController.insertUsers);
+router.post('/user', dbFileController.insertUsers);
 
-router.post('/classTest',chatController.classTest);
+router.post('/classTest',dbFileController.classTest);
 
-router.get('/users',chatController.fetchUsers)
+router.get('/users',dbFileController.fetchUsers);
+
+router.post('/addProducts',dbFileController.addProducts)
 
 module.exports = router

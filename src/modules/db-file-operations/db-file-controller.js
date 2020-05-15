@@ -1,7 +1,9 @@
 let XLSX = require('xlsx');
 let model = require('../../modules/auth/models/auth.model');
 let authService = require('../../modules/auth/oauth/user.service');
-let acl = require('./acl-class')
+let acl = require('./acl-class');
+let ProductModel = require('../products/models/product.model');
+
 let insertUsers = (req, res)=>{
     console.log("path is",process.cwd()+"/uploads/user.xlsx")
     let fileData = XLSX.readFile(process.cwd()+"/uploads/users.xlsx", {default:""})
@@ -42,8 +44,40 @@ let fetchUsers = (req, res)=>{
     })
 }
 
+let addProducts = (req, res) => {
+    
+    let fileData = XLSX.readFile(process.cwd()+"/uploads/Adidas final.xlsx", {default:""})
+    let sheetData = XLSX.utils.sheet_to_json(fileData.Sheets[fileData.SheetNames[0]])
+    console.log("sheet data is",sheetData);
+    
+
+    let sheetWithDetails = sheetData.map(element => {
+        return {
+            ...element,productName:element['Product Name'],
+            sellingPrice:element['Listing Price'],
+            details:{...element },
+            images:JSON.parse(element['Images']).map(image=>({link:image}))
+        }
+    });
+
+    ProductModel.Product.insertMany(sheetWithDetails)
+    .then(response=>{
+        console.log("Response is",response);
+        res.json({status:"success",msg:"Products Inserted"});
+    })
+    .catch(err=>{
+        res.json({status:"Error",msg:"Some error in inserting"})
+    })
+
+
+
+
+
+} 
+
 module.exports =  {
     insertUsers,
     classTest,
-    fetchUsers
+    fetchUsers,
+    addProducts
 }
