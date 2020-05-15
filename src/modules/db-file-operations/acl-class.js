@@ -1,7 +1,7 @@
 class Acl {
     name;
     constructor(passedName){
-        console.log('My name is satyam');
+        
         this.name = passedName 
     }
 

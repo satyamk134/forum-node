@@ -56,7 +56,7 @@ exports.login = (req, res) => {
 }
 
 exports.token = async (req, res)=>{
-  console.log('came to get token',req.query);
+  
   const oauth2Client = new google.auth.OAuth2(
     '63185176944-liii4cl4p1oj30suhi75ouekpdact3jo.apps.googleusercontent.com',
     'yU2Y31miEpraEPmnGeP4avjE',
@@ -66,7 +66,7 @@ exports.token = async (req, res)=>{
   try {
     let code = req.query.code;
     const {tokens} = await oauth2Client.getToken(code)
-    console.log("support apis are",google.getSupportedAPIs())
+   
     res.json(tokens);
   } catch(err) {
     console.log("Error in getting the tokens",err)
@@ -96,7 +96,7 @@ exports.getUserInfo = (req, res) => {
 
   getEmailAddresses()
   .then(resp=>{
-    console.log("resp is",resp)
+    
         return service.checkEmailExists({email:resp}) 
   }).then(resp=>{
       if(resp) {
@@ -155,7 +155,7 @@ exports.name = (req, res)=>{
 }
 
 exports.createUser = (req, res) => {
-    console.log("req body is ",req.body);
+    
    
     service.insertUser(req.body)
     .then(response=>res.json({status:'sucess',msg:'User is Created'}))

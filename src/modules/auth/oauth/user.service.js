@@ -98,7 +98,7 @@ exports.login = (req) => {
     let loginUser = async () => {
         try {
             let user = await model.User.find({ emailId: req.emailId })
-            console.log("user is", user);
+            
             if(user.length == 0) {
                 throw ({status:"Error",msg: 'User Not found'})
             }
