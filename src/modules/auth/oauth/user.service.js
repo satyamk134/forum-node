@@ -117,6 +117,9 @@ exports.login = (req) => {
                 }
                
             } else if (user[0].provider == 'google') {
+                if((user[0].password === 'google1234') && req.password) {
+                    throw ({ status:"Error",msg:"Please Reset password"})
+                }
                 let token = jwt.sign({
                     data: { role: user[0].role, lastName: user[0].lastName, emailId: user[0].emailId }
                 }, 'secret', { expiresIn: '1h' });
