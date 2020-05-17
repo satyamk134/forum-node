@@ -27,7 +27,7 @@ let fileDb = require('./src/modules/db-file-operations/db-file.router');
 let Product = require('./src/modules/products/routes/product.route');
 
 app.use('/auth', auth)
-
+app.use('/file',fileDb)
 /**
  * add the token for rest of the routes
 */
@@ -64,7 +64,6 @@ app.use((req,res,next)=>{
 })
 
 app.use('/chatbot', chatBotApp)
-app.use('/file',fileDb)
 app.use('/product',Product)
 
 
