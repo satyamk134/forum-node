@@ -2,7 +2,7 @@ const mongoose = require('mongoose');
 let model = require('../models/auth.model');
 var rp = require('request-promise');
 var jwt = require('jsonwebtoken');
-const bcrypt = require('bcrypt');
+const bcrypt = require('bcryptjs');
 exports.create = (user) => {
     /**create user*/
 
