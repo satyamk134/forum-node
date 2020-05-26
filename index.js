@@ -30,8 +30,8 @@ let auth = require('./src/modules/auth/routes/auth.route');
 let fileDb = require('./src/modules/db-file-operations/db-file.router');
 let Product = require('./src/modules/products/routes/product.route');
 
-app.use('/auth', auth)
-app.use('/file',fileDb)
+app.use('/api/auth', auth)
+app.use('/api/file',fileDb)
 /**
  * add the token for rest of the routes
 */
@@ -68,8 +68,8 @@ app.use((req,res,next)=>{
     
 })
 
-app.use('/chatbot', chatBotApp)
-app.use('/product',Product)
+app.use('/api/chatbot', chatBotApp)
+app.use('/api/product',Product)
 
 
 app.use(function(req,res){
