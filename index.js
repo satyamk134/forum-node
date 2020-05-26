@@ -20,6 +20,10 @@ app.use(cors())
 //     res.header('Access-Control-Allow-Methods', 'PUT, POST, GET, DELETE, OPTIONS');
 //     next();
 // });
+app.use((req, res,next)=>{
+    console.log("path is===>",req.path);
+    next()
+})
 
 let chatBotApp = require('./src/modules/chat-bot/routes/chat-bot.route');
 let auth = require('./src/modules/auth/routes/auth.route');
@@ -32,6 +36,7 @@ app.use('/file',fileDb)
  * add the token for rest of the routes
 */
 app.use((req,res,next)=>{
+    console.log("req path is",req.path);
     let token = req.headers['x-access-token'] || req.headers['authorization'];
     if(token){
         token = token.slice(7, token.length);
