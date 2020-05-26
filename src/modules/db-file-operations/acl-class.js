@@ -1,13 +1,5 @@
 class Acl {
-    constructor(passedName){
-        
-        this.name = passedName 
-    }
-
-    printName = () => {
-        console.log("print function My name is",this.name);
-        return '0';
-    }
+    
 
 }
 
