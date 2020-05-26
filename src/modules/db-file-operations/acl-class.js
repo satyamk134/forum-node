@@ -1,5 +1,4 @@
 class Acl {
-    name;
     constructor(passedName){
         
         this.name = passedName 
