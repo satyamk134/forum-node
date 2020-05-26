@@ -12,6 +12,10 @@ app.use(bodyParser.urlencoded({
 }));
 app.use(bodyParser.json());
 app.use(cors())
+app.use(cors({
+    origin: ['http://satyam.online','http://localhost:3000'], 
+    allowedHeaders: [ 'Accept-Version', 'Authorization', 'Credentials', 'Content-Type' ]
+}));
 
 // app.use(function(req, res, next) {
 //     res.header("Access-Control-Allow-Origin", "*");
@@ -24,6 +28,13 @@ app.use((req, res,next)=>{
     console.log("path is===>",req.path);
     next()
 })
+
+app.use('/app',(req,res,next)=>{
+    cors();
+    next();
+})
+
+
 
 let chatBotApp = require('./src/modules/chat-bot/routes/chat-bot.route');
 let auth = require('./src/modules/auth/routes/auth.route');
