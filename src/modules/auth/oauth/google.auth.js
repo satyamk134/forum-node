@@ -57,7 +57,7 @@ exports.login = (req, res) => {
 }
 
 exports.token = async (req, res)=>{
-  
+  let redirect_uri = req.get('origin')?req.get('origin'):'http://'+req.get('host');
   const oauth2Client = new google.auth.OAuth2(
     '63185176944-liii4cl4p1oj30suhi75ouekpdact3jo.apps.googleusercontent.com',
     'yU2Y31miEpraEPmnGeP4avjE',
