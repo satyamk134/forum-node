@@ -12,10 +12,7 @@ app.use(bodyParser.urlencoded({
 }));
 app.use(bodyParser.json());
 app.use(cors())
-app.use(cors({
-    origin: ['http://satyam.online','http://localhost:3000'], 
-    allowedHeaders: [ 'Accept-Version', 'Authorization', 'Credentials', 'Content-Type' ]
-}));
+
 
 // app.use(function(req, res, next) {
 //     res.header("Access-Control-Allow-Origin", "*");
@@ -29,10 +26,6 @@ app.use((req, res,next)=>{
     next()
 })
 
-app.use('/app',(req,res,next)=>{
-    cors();
-    next();
-})
 
 
 
@@ -46,7 +39,7 @@ app.use('/api/file',fileDb)
 /**
  * add the token for rest of the routes
 */
-app.use((req,res,next)=>{
+app.use('/api',(req,res,next)=>{
     console.log("req path is",req.path);
     let token = req.headers['x-access-token'] || req.headers['authorization'];
     if(token){
