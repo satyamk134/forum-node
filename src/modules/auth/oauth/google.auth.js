@@ -10,7 +10,7 @@ let service = require('./user.service')
 exports.google = (req, res) => {
   console.log("origin url is",req.get('origin'))
   console.log("host is base url is",req.get('host'))
-  let redirect_uri = req.get('origin')?req.get('origin'):req.get('host');
+  let redirect_uri = req.get('origin')?req.get('origin'):'http://'+req.get('host');
 const oauth2Client = new google.auth.OAuth2(
     '63185176944-liii4cl4p1oj30suhi75ouekpdact3jo.apps.googleusercontent.com',
     'asdasasdsada1232',
