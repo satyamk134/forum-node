@@ -61,7 +61,7 @@ exports.token = async (req, res)=>{
   const oauth2Client = new google.auth.OAuth2(
     '63185176944-liii4cl4p1oj30suhi75ouekpdact3jo.apps.googleusercontent.com',
     'yU2Y31miEpraEPmnGeP4avjE',
-    req.get('origin')
+    redirect_uri
 );
 
   try {
