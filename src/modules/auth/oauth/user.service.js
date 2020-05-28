@@ -105,7 +105,11 @@ exports.login = (req) => {
             
             if (user[0].provider == 'local') {
                 let token = jwt.sign({
-                    data: { role: user[0].role, lastName: user[0].lastName, emailId: user[0].emailId }
+                    data: { role: user[0].role,
+                        firstName:user[0].firstName,
+                        lastName: user[0].lastName,
+                        emailId: user[0].emailId 
+                    }
                 }, 'secret', { expiresIn: '1h' });
                 let isPasswordCorrect = await this.comparePassword({password: req.password, hash: user[0].password})
                 if(isPasswordCorrect) {
@@ -121,9 +125,9 @@ exports.login = (req) => {
                     throw ({ status:"Error",msg:"Please Reset password"})
                 }
                 let token = jwt.sign({
-                    data: { role: user[0].role, lastName: user[0].lastName, emailId: user[0].emailId }
+                    data: { role: user[0].role, firstName:user[0].firstName,lastName: user[0].lastName, emailId: user[0].emailId }
                 }, 'secret', { expiresIn: '1h' });
-                return { role: user[0].role, lastName: user[0].lastName, emailId: user[0].emailId, token: token };
+                return { role: user[0].role, lastName: user[0].lastName, firstName:user[0].firstName, emailId: user[0].emailId, token: token };
             }
 
 

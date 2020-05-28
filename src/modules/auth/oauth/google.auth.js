@@ -21,7 +21,9 @@ const oauth2Client = new google.auth.OAuth2(
 const scopes = [
   'profile',
   'email',
-  'https://www.googleapis.com/auth/contacts'
+  'https://www.googleapis.com/auth/user.addresses.read',
+  'https://www.googleapis.com/auth/user.phonenumbers.read'	
+  // 'https://www.googleapis.com/auth/contacts'
 
 ];
 
