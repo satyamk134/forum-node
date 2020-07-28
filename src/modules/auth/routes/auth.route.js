@@ -6,7 +6,7 @@ router.get('/google',googleApi.google);
 
 router.post('/login',googleApi.login);
 
-router.post('/user',googleApi.createUser)
+router.post('/user',googleApi.createUser);
 
 router.get('/token', googleApi.token);
 

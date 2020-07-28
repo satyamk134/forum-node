@@ -76,6 +76,11 @@ app.use('/api/chatbot', chatBotApp)
 app.use('/api/product',Product)
 
 
+//for pradeep demo
+let fruit = require('./src/modules/demo/routes/fruits.route');
+app.use('/fruit', fruit);
+
+
 app.use(function(req,res){
     res.status(404).json({msg:'Resource Not Found'});
 });

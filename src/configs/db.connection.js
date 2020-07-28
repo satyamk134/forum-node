@@ -6,9 +6,9 @@ exports.connectToDb = ()=>{
      * For local 
     */
    
-   
+   //mongodb+srv://admin:india_123@cluster0-xt9fw.mongodb.net/localshop?retryWrites=true&w=majority
    //console.log("url is",'mongodb://'+config.connection.database.host+':'+config.connection.database.port+'/'+config.connection.database.database)
-   mongoose.connect('mongodb+srv://admin:india_123@cluster0-xt9fw.mongodb.net/localshop?retryWrites=true&w=majority', {
+   mongoose.connect('mongodb://localhost:27017/product', {
     useNewUrlParser: true
   });;
   //mongoose.connect(uri)
