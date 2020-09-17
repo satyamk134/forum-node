@@ -39,6 +39,8 @@ app.use('/api/file',fileDb)
 /**
  * add the token for rest of the routes
 */
+
+//uncomment this code if you want to use token
 app.use('/api',(req,res,next)=>{
     console.log("req path is",req.path);
     let token = req.headers['x-access-token'] || req.headers['authorization'];
@@ -69,11 +71,10 @@ app.use('/api',(req,res,next)=>{
         let err = {status:"Error",msg:"Invalid Reqest"};
         res.status(403).json(err)
     }
-    
 })
 
 app.use('/api/chatbot', chatBotApp)
-app.use('/api/product',Product)
+app.use('/api/product', Product)
 
 
 //for pradeep demo

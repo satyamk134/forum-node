@@ -17,6 +17,7 @@ var UserSchema = new Schema({
    role: {type: String, default:'customer'},
    provider:{type:String, default:"local"}
 
-},{ _id : false,versionKey: false  });
+},{
+   versionKey: false  });
 
 exports.User = mongoose.model('User', UserSchema);

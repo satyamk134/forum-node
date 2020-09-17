@@ -75,9 +75,76 @@ let addProducts = (req, res) => {
 
 } 
 
+let slugcsv = (req, res)=>{
+
+    let fileData = XLSX.readFile(process.cwd()+"/uploads/care-advantage.xls", {default:""})
+    let sheetData = XLSX.utils.sheet_to_json(fileData.Sheets[fileData.SheetNames[0]])
+    console.log("sheet data is",sheetData);
+    
+    var slugs = [];
+    let sheetWithDetails = sheetData.map(element => {
+        let coverType = element['Cover Type'];
+        if(coverType == 'Individual'){
+            coverType = 'INDIVIDUAL';
+        }else{
+            coverType = 'FAMILYFLOATER';
+        }
+
+
+        yearsE = "99 - 99";
+         if (element['Age Band'] == 'Above 75 Years'){
+            yearsE = "76 - 99";
+        }else{
+            // yearS = element['Age Band'].slice(0,2);
+            // yearE = element['Age Band'].slice(4,6);
+            yearsE = element['Age Band'].slice(0,7);
+
+
+        }
+
+        //addding the SI code
+        // 001: 25L Individual
+
+        // 002: 25L Floater
+
+        // 003: 50L Individual
+
+        // 004: 50L Floater
+
+        if(element['Sum Insured'] == '25 lacs' && element['No. of Members'] == 1){
+            sicode = '001';
+        }else if(element['Sum Insured'] == '50 lacs' && element['No. of Members'] == 1){
+            sicode = '003';
+        }else if(element['Sum Insured'] == '25 lacs' && element['No. of Members'] > 1){
+            sicode = '002';
+        }else{
+            sicode = '004';
+        }
+      
+            
+        let slug = coverType + ":" +yearsE +":"+element['No. of Adults']+":"+element['No. of Children']+":"+element['Term']+":"+sicode;
+        
+
+        let obj = {plan:slug+","+element['Premium']};
+        slugs.push(obj);
+
+        let workbook = XLSX.utils.book_new();
+        let worksheet = XLSX.utils.json_to_sheet(slugs);
+        XLSX.utils.book_append_sheet(workbook, worksheet, 'caread1');
+        XLSX.writeFile(workbook, 'out.xlsb');
+
+
+    });
+    res.json(slugs);
+
+   
+
+}
+
 module.exports =  {
     insertUsers,
     classTest,
     fetchUsers,
-    addProducts
+    addProducts,
+    slugcsv
 }

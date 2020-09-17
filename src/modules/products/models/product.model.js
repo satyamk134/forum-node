@@ -1,5 +1,5 @@
 const mongoose = require('mongoose');
-var Schema = mongoose.Schema
+var Schema = require('mongoose').Schema;
 //dbconnection.connectToDb();
 
 
@@ -17,4 +17,13 @@ var ProductSchema = new Schema({
 
 },{ _id : false,versionKey: false  });
 exports.Product = mongoose.model('Product', ProductSchema);
+
+
+var CartSchema = new Schema({
+      userId:{ type:Schema.ObjectId },
+      products:[],
+      lastVisited:{type:Date, value:Date.now},
+
+},{ _id : false,versionKey: false  });
+exports.Cart = mongoose.model('Cart', CartSchema);
 
