@@ -12,6 +12,8 @@ router.get('/users',dbFileController.fetchUsers);
 
 router.post('/addProducts',dbFileController.addProducts)
 
-router.post('/slugcsv', dbFileController.slugcsv)
+router.post('/slugcsv', dbFileController.slugcsv);
+
+router.post('/csvToPremiumJson', dbFileController.csvToPremiumJson)
 
 module.exports = router

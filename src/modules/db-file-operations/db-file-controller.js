@@ -4,6 +4,7 @@ let authService = require('../../modules/auth/oauth/user.service');
 let acl = require('./acl-class');
 let ProductModel = require('../products/models/product.model');
 
+
 let insertUsers = (req, res)=>{
     console.log("path is",process.cwd()+"/uploads/user.xlsx")
     let fileData = XLSX.readFile(process.cwd()+"/uploads/users.xlsx", {default:""})
@@ -141,10 +142,28 @@ let slugcsv = (req, res)=>{
 
 }
 
+let  csvToPremiumJson = (req, res)=>{
+    let fileData = XLSX.readFile(process.cwd()+"\\uploads\\"+req.body.fileName, {default:""})
+    let sheetData = XLSX.utils.sheet_to_json(fileData.Sheets[fileData.SheetNames[0]]);
+    //console.log("sheet data is",sheetData);
+    let premiumJson = {};
+    for(let i=0;i<sheetData.length;i++){
+        let eachRow = sheetData[i];
+        let rowCopy = {...eachRow};
+        delete rowCopy['SI Code'];
+        premiumJson[eachRow['SI Code']] =  rowCopy;
+        
+    }
+    res.json(premiumJson)
+    //console.log("premium json is",premiumJson);
+    
+}
+
 module.exports =  {
     insertUsers,
     classTest,
     fetchUsers,
     addProducts,
-    slugcsv
+    slugcsv,
+    csvToPremiumJson
 }

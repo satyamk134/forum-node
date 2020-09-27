@@ -4,9 +4,9 @@ const http = require('http');
 const dbConnection = require('./src/configs/db.connection');
 var bodyParser = require('body-parser');
 var jwt = require('jsonwebtoken');
+
 var cors = require('cors')
 dbConnection.connectToDb();
-
 app.use(bodyParser.urlencoded({
     extended: true
 }));
@@ -46,7 +46,7 @@ app.use('/api',(req,res,next)=>{
     let token = req.headers['x-access-token'] || req.headers['authorization'];
     if(token){
         token = token.slice(7, token.length);
-        console.log("token is",token);
+        
         jwt.verify(token, 'secret', function(err, decoded) {
             if(err) {
                 console.log("Error",decoded);
@@ -58,9 +58,11 @@ app.use('/api',(req,res,next)=>{
                     let err = {status:"Error",msg:"Token Expired"}
                     res.status(403).json({err})
                 } else {
-                    console.log("time is",Date.now());
                     if(decoded.data)
                     req.userInfo = decoded.data;
+
+                    //fetch user
+
                     next()
                 }
                 
