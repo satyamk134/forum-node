@@ -11,11 +11,11 @@ exports.google = (req, res) => {
   console.log("origin url is",req.get('origin'))
   console.log("host is base url is",req.get('host'))
   let redirect_uri = req.get('origin')?req.get('origin'):'http://'+req.get('host');
-const oauth2Client = new google.auth.OAuth2(
-    '63185176944-liii4cl4p1oj30suhi75ouekpdact3jo.apps.googleusercontent.com',
-    'asdasasdsada1232',
-    redirect_uri
-);
+  const oauth2Client = new google.auth.OAuth2(
+      '63185176944-liii4cl4p1oj30suhi75ouekpdact3jo.apps.googleusercontent.com',
+      'asdasasdsada1232',
+      redirect_uri
+  );
 
 // generate a url that asks permissions for Blogger and Google Calendar scopes
 const scopes = [
@@ -60,11 +60,12 @@ exports.login = (req, res) => {
 
 exports.token = async (req, res)=>{
   let redirect_uri = req.get('origin')?req.get('origin'):'http://'+req.get('host');
+  console.log("redirect uri",redirect_uri);
   const oauth2Client = new google.auth.OAuth2(
-    '63185176944-liii4cl4p1oj30suhi75ouekpdact3jo.apps.googleusercontent.com',
-    'yU2Y31miEpraEPmnGeP4avjE',
-    redirect_uri
-);
+      '63185176944-liii4cl4p1oj30suhi75ouekpdact3jo.apps.googleusercontent.com',
+      'yU2Y31miEpraEPmnGeP4avjE',
+      redirect_uri
+  );
 
   try {
     let code = req.query.code;
@@ -105,39 +106,19 @@ exports.getUserInfo = (req, res) => {
       if(resp) {
           //user exists
       } else {
-        //user don't exists, so create account
-        //take email, firstname, lastname from jwt token
-        //return service.createUser(req.toke)(service.decodeToken)
+        
         
       }
   })
   
 
-  // let checkIfEmailAlreadyExists = ()=>{
-  //   emailRes
-  // }
+
 
   
 
 
   
-  //console.log("email address are",emailAddressesRes);
-  
-  // let concatReqOptions = {
-  //   uri: 'https://www.google.com/m8/feeds/contacts/satyamk134@gmail.com/full',
-  //   qs: {
-  //     key: 'AIzaSyAEKRRgWaBxpgWFJdr6ZkWkePdRKW3ZmxI'
-  //   },
-  //   headers: {
-  //     Authorization: 'Bearer'+ ' '+req.query.access_token
-  //   },
-  //   json: true
-  // }
-
-  // let contacts = await rp.get(concatReqOptions);
-  // console.log('contacts are',contacts)
-
-  //res.json({emails:JSON.parse(emailAddressesRes), contacts:contacts})
+ 
 
   
 }
@@ -146,6 +127,7 @@ exports.authorizeUser = (req, res)=>{
 
     let token = req.headers['x-access-token'] || req.headers['authorization'];
     token = token.slice(7, token.length);
+    console.log("token is",token);
    
     return service.authorise({id_token:token, access_token:''})
             .then(resp=>{res.json({status:"user authorised",data:resp})})

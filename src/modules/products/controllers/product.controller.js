@@ -1,9 +1,18 @@
 const { request } = require('express');
 const mongoose = require('mongoose');
+const db = require("../mModels");
+const Sequelize = require("sequelize");
+const { file } = require("googleapis/build/src/apis/file");
+const Tutorial = db.tutorials;
+const Product = db.products;
+const Cart = db.carts;
+const Op = Sequelize.Op
+
 let ProductModel = require('../models/product.model');
-let User =  mongoose.model('User');
+let User =  db.users;
+
 var ObjectId = mongoose.Types.ObjectId;
-const fetchProducts = (req,res) => {
+const fetchProducts_old = (req,res) => {
     console.log("req",req.userInfo)
     let queryProducts = ()=>{
         let query = [{$match:{}},{$limit:20}]
@@ -19,6 +28,19 @@ const fetchProducts = (req,res) => {
     queryProducts()
 }
 
+const fetchProducts = (req, res)=>{
+    console.log("fetch products will be called");
+    Promise.all([Product.count(),Product.findAll({limit:20})])
+    .then(response=>{
+        let responseojb = {count: response[0],payload:response[1]}
+        res.json(responseojb);
+    })
+
+    
+    
+
+}
+
 const addToCart = (req, res) => {
     //add to cart of a user
 
@@ -26,12 +48,14 @@ const addToCart = (req, res) => {
 
     let findUser = ()=>{
         //find the user id using email
-        let match = {emailId: req.userInfo.emailId};
-        return User.findOne(match)
+        let match = {where:{ emailId:req.userInfo.emailId},raw:true};
+        return User.findAll(match);
     
     }
 
-    let updateCartOfUSer = (userInfo) => {
+    
+
+    let updateCartOfUSer = (userDetails) => {
         //update user  
 
         /**
@@ -39,38 +63,39 @@ const addToCart = (req, res) => {
          * 2. old user, old product
          * 3. user exist, new product
         */
-       
-        console.log("user info",req.body.productId); 
-        let match = {userId: userInfo._id, "products._id":req.body.productId};
+        let userInfo = userDetails[0];
+        
+        console.log("user info",userInfo); 
+        let match = {where:{userId: userInfo.id, "productId":req.body.productId}};
 
         let findCart = () => {
 
-            return ProductModel.Cart.find(match)
+            return Cart.findAll(match);
+
         }
 
         let updateCart = (cartStatus) => {
             console.log("Came inside update cart",cartStatus.length);
                 let matchStatement = {};
                 let updateStatement = {};
-                if(cartStatus && cartStatus.length > 0){
+                if(cartStatus && cartStatus.length > 0) {
                     //if has product added, increment count then
-                    matchStatement = {"products._id": req.body.productId,userId: userInfo._id};
-                    updateStatement = {$inc:{ "products.$.count":1}};
-                    return  ProductModel.Cart.updateOne(matchStatement,updateStatement)
+                    //matchStatement = {"products.productId": ObjectId(req.body.productId),userId: userInfo._id};
+                    matchStatement = {"productId": req.body.productId,userId: userInfo.id};
+                    updateStatement = {count:Sequelize.literal('count + 1')};
+                    return  Cart.update(updateStatement,{where:matchStatement})
                 }else{
-                    matchStatement = {userId: userInfo._id};
-                    updateStatement =  {$push:{products:{_id:req.body.productId}}};
-                    return  ProductModel.Cart.updateOne(matchStatement,updateStatement,{upsert:true})
+                    let cart = {ProductId:req.body.productId, count:1,UserId:userInfo.id};
+                    console.log("cart===>",cart);
+                    return  Cart.create(cart);
                 }
-                
-
-                
         }
 
-        return   findCart()
+      return findCart()
             .then(updateCart)
             .catch(err=>{
-                console.log("Error in updating the cart");
+                console.log("Error in updating the cart",err);
+                return Promise.reject({"Status": "Not able to add product in Cart"});
             })
          
         
@@ -87,8 +112,73 @@ const addToCart = (req, res) => {
     .then(resp=>{
         res.json({status:"success"})
     })
+    .catch(err=>{
+        res.json(err);
+    })
     
 
+
+
+}
+
+const removeFromCart = (req, res)=>{
+    let findUser = ()=>{
+        //find the user id using email
+        let match = {where:{emailId: req.userInfo.emailId}};
+        return User.findOne(match)
+    
+    }
+
+    let updateCartOfUSer = (userInfo) => {
+        //update user  
+
+        /**
+         * 1. New user , new product
+         * 2. old user, old product
+         * 3. user exist, new product
+        */
+    
+        let match = {userId: userInfo.id,productId: req.body.productId, count:{[Op.gte]:1}};
+
+        let  updateCart = async (itemStatus) => {
+
+
+            //if count 1 is found the remove the item from cart
+            //else decement the count
+            let matchStatement = {};
+            let updateStatement = {};
+          
+
+            //remove item from cart
+            matchStatement = { where:{userId: userInfo.id, productId:req.body.productId}};
+            let cartItem = await  Cart.findOne(matchStatement);
+            if(cartItem.count >1){
+                //decrement
+                await cartItem.decrement('count');
+            }else{
+                //delte
+                await cartItem.destroy();
+
+            }             
+        }
+
+        return updateCart()
+            .then(resp=>{
+                res.json({status:"success"})
+            })
+            .catch(err=>{
+                console.log("Error in updating the cart");
+            })
+         
+           
+    }
+
+    findUser()
+    .then(updateCartOfUSer)
+    .catch(err=>{
+        console.log("Unexpected internal server error occured",err);
+
+    })
 
 
 }
@@ -100,17 +190,22 @@ let getUserCart  = (req, res) => {
 
    let findUser = ()=>{
     //find the user id using email
-        let match = {emailId: req.userInfo.emailId};
+        let match = {where:{emailId: req.userInfo.emailId}};
         return User.findOne(match)
    }
 
    let getCart = (userInfo)=>{
 
-        let ProductsPromise = ProductModel.Cart.aggregate([{"$match": {userId: ObjectId(userInfo._id)}}, {$project:{_id:0,noOfItems:{$size:"$products"}}}]);
-        console.log(req.userInfo);
+        let ProductsPromise = Cart.findAll({
+            attributes: [ [Sequelize.fn('sum', Sequelize.col('count')), 'count']],
+            where:{userId:userInfo.id},
+            group:['userId']
+        });
+       
         return ProductsPromise.then(resp=>{
             if(resp.length>0){
-                res.json(resp[0])
+                let response = {noOfItems:resp[0].count};
+                res.json(response);
             }else{
                 res.json([]);
             }
@@ -128,47 +223,61 @@ let getUserCart  = (req, res) => {
 let getCartProductDetails = (req, res)=>{
     let findUser = ()=>{
         //find the user id using email
-            let match = {emailId: req.userInfo.emailId};
-            return User.findOne(match)
+            let match = {where:{emailId: req.userInfo.emailId},raw:true};
+            return User.findOne(match);
     }  
 
     let  findCartDetails = async (userInfo)=>{
+
+        console.log("userinfo",userInfo);
+        let matchStatement = {where:{userId:userInfo.id}};
+
+        
         
         //-----first get the product ids from cart
-        let products = []
+        let products = [];
         try {
 
-            products = await ProductModel.Cart.find({userId: userInfo._id});
+            //now mysql code for getting cart details
 
+            products = await Cart.findAll({
+                where:{userId:userInfo.id},
+                include:{
+                    model:db.products,
+                },
+                
+                
+            })
         }catch(err){
             console.log("Error in getting the cart details");
             Promise.reject("Not able to get cart details");
         }
 
-        console.log("products are"+JSON.stringify(products));
-
-        
-
         if(products.length >0){
 
+            res.json({products});
 
         }else{
             //when cart is empty
+            Promise.reject({msg:"Cart is empty"});
         }
         
     }
 
     findUser()
     .then(findCartDetails)
+    .catch(err=>{
+        console.log("Errr is",err);
+        res.json({msg:"No able to find your cart"}).status(500);
+    })
 }
-
-
-
 
 
 module.exports = {
     fetchProducts,
     addToCart,
     getUserCart,
-    getCartProductDetails
+    getCartProductDetails,
+    removeFromCart,
+    
 }

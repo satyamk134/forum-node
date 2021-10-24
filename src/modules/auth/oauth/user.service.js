@@ -1,8 +1,10 @@
 const mongoose = require('mongoose');
-let model = require('../models/auth.model');
+let model = require('../models/user.model');
 var rp = require('request-promise');
 var jwt = require('jsonwebtoken');
 const bcrypt = require('bcryptjs');
+const db = require('../models');
+User = db.users;
 exports.create = (user) => {
     /**create user*/
 
@@ -18,7 +20,7 @@ exports.create = (user) => {
 }
 
 exports.checkEmailExists = (req) => {
-    return model.User.find({ emailId: req.email }).then(resp => resp.length > 0 ? true : false)
+    return User.findAll({ where:{emailId: req.email} }).then(resp => resp.length > 0 ? true : false);
 
 }
 
@@ -35,7 +37,7 @@ exports.decodeToken = (req) => {
 exports.authorise = (tokens) => {
 
 
-
+    console.log("tokens",tokens);
     let deodeToken = async () => {
         var options = {
             uri: 'https://oauth2.googleapis.com/tokeninfo',
@@ -64,6 +66,7 @@ exports.authorise = (tokens) => {
 
         try {
             let decodeTokenInfo = await deodeToken();
+
             let emailExists = await this.checkEmailExists({ email: decodeTokenInfo.email });
             console.log("emailExists", emailExists)
             if (emailExists) {
@@ -71,23 +74,20 @@ exports.authorise = (tokens) => {
             } else {
                 //create the user
                 let user = getUserInfo(decodeTokenInfo);
-                await model.User.insertMany(user)
+                console.log(user);
+                await User.create(user)
             }
             console.log("now go to login")
             let loginUser = await this.login({ emailId: decodeTokenInfo.email });
             return loginUser
 
         } catch (err) {
+            console.log("came for erro");
             console.log("err is", err);
         }
-
-
-
-
-
     }
 
-    return authorizeUser()
+    return authorizeUser();
 }
 
 exports.login = (req) => {
@@ -97,7 +97,7 @@ exports.login = (req) => {
     
     let loginUser = async () => {
         try {
-            let user = await model.User.find({ emailId: req.emailId })
+            let user = await User.findAll({ where:{emailId: req.emailId }})
             
             if(user.length == 0) {
                 throw ({status:"Error",msg: 'User Not found'})
@@ -114,7 +114,8 @@ exports.login = (req) => {
                 let isPasswordCorrect = await this.comparePassword({password: req.password, hash: user[0].password})
                 if(isPasswordCorrect) {
 
-                    return { role: user[0].role, lastName: user[0].lastName, emailId: user[0].emailId, token: token };
+                    return { role: user[0].role, lastName: user[0].lastName, 
+                        emailId: user[0].emailId, token: token };
                 
                 } else {
                     throw ({ status:"Error",msg:"Password is Wrong"})

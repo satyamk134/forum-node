@@ -1,5 +1,4 @@
 let XLSX = require('xlsx');
-let model = require('../../modules/auth/models/auth.model');
 let authService = require('../../modules/auth/oauth/user.service');
 let acl = require('./acl-class');
 let ProductModel = require('../products/models/product.model');
@@ -39,10 +38,7 @@ let classTest  = (req, res) => {
 }
 
 let fetchUsers = (req, res)=>{
-    model.User.find()
-    .then(response => {
-        res.status(200).json({data:response})
-    })
+   
 }
 
 let addProducts = (req, res) => {

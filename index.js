@@ -1,12 +1,21 @@
 const express = require('express');
 const app = express();
 const http = require('http');
+require('dotenv').config();
+
 const dbConnection = require('./src/configs/db.connection');
+const dbConfig = require("./src/configs/db.config.js");
+
 var bodyParser = require('body-parser');
 var jwt = require('jsonwebtoken');
 
 var cors = require('cors')
 dbConnection.connectToDb();
+
+dbConnection.mysqlConnection;
+const db = require("./src/modules/products/mModels");
+
+
 app.use(bodyParser.urlencoded({
     extended: true
 }));
@@ -81,10 +90,11 @@ app.use('/api/product', Product)
 
 //for pradeep demo
 let fruit = require('./src/modules/demo/routes/fruits.route');
+const { sequelize } = require('./src/modules/products/mModels');
 app.use('/fruit', fruit);
 
 
 app.use(function(req,res){
     res.status(404).json({msg:'Resource Not Found'});
 });
-http.createServer(app).listen(4545);
+http.createServer(app).listen(4343);
