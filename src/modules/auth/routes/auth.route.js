@@ -8,7 +8,8 @@ router.post('/login',googleApi.login);
 
 router.post('/user',googleApi.createUser);
 
-router.get('/token', googleApi.token);
+router.get('/token', googleApi.token)
+      .post('/token', googleApi.decodeJwtToken) /**login or create user */
 
 router.get('/name',googleApi.name);
 

@@ -1,21 +1,24 @@
 const express = require('express');
 const app = express();
 const http = require('http');
+const swaggerUi = require('swagger-ui-express');
+const swaggerDocument = require('./swagger.json');
+
 require('dotenv').config();
 
-const dbConnection = require('./src/configs/db.connection');
-const dbConfig = require("./src/configs/db.config.js");
+// const dbConnection = require('./src/configs/db.connection');
+// const dbConfig = require("./src/configs/db.config.js");
 
 var bodyParser = require('body-parser');
 var jwt = require('jsonwebtoken');
 
 var cors = require('cors')
-dbConnection.connectToDb();
+//dbConnection.connectToDb();
 
-dbConnection.mysqlConnection;
-const db = require("./src/modules/products/mModels");
+//dbConnection.mysqlConnection;
+const db = require("./models");
 
-
+app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerDocument));
 app.use(bodyParser.urlencoded({
     extended: true
 }));
@@ -41,8 +44,8 @@ app.use((req, res,next)=>{
 let chatBotApp = require('./src/modules/chat-bot/routes/chat-bot.route');
 let auth = require('./src/modules/auth/routes/auth.route');
 let fileDb = require('./src/modules/db-file-operations/db-file.router');
-let Product = require('./src/modules/products/routes/product.route');
-
+//let Product = require('./src/modules/products/routes/product.route');
+const router = require('./src/modules/db-file-operations/db-file.router');
 app.use('/api/auth', auth)
 app.use('/api/file',fileDb)
 /**
@@ -84,15 +87,11 @@ app.use('/api',(req,res,next)=>{
     }
 })
 
-app.use('/api/chatbot', chatBotApp)
-app.use('/api/product', Product)
+app.use('/api/chatbot', chatBotApp);
+let productroutes = require('./src/modules/products/routes/index.router');
+productroutes(app);
 
-
-//for pradeep demo
-let fruit = require('./src/modules/demo/routes/fruits.route');
-const { sequelize } = require('./src/modules/products/mModels');
-app.use('/fruit', fruit);
-
+//app.use('/api', productroutes);
 
 app.use(function(req,res){
     res.status(404).json({msg:'Resource Not Found'});

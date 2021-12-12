@@ -1,10 +1,9 @@
 const mongoose = require('mongoose');
-let model = require('../models/user.model');
 var rp = require('request-promise');
 var jwt = require('jsonwebtoken');
 const bcrypt = require('bcryptjs');
-const db = require('../models');
-User = db.users;
+const db = require('../../../../models');
+User = db.User;
 exports.create = (user) => {
     /**create user*/
 
@@ -91,24 +90,23 @@ exports.authorise = (tokens) => {
 }
 
 exports.login = (req) => {
-    //login the user with jwt
-    //google login will have already jwt 
-    //if using local method then we have to generate the jwt
-    
+    /*login the user with jwt
+      google login will have already jwt 
+      if using local method then we have to generate the jwt
+    */
+   
     let loginUser = async () => {
         try {
             let user = await User.findAll({ where:{emailId: req.emailId }})
-            
             if(user.length == 0) {
                 throw ({status:"Error",msg: 'User Not found'})
             }
             
             if (user[0].provider == 'local') {
                 let token = jwt.sign({
-                    data: { role: user[0].role,
-                        firstName:user[0].firstName,
-                        lastName: user[0].lastName,
-                        emailId: user[0].emailId 
+                    data: { role: user[0].role, firstName:user[0].firstName,
+                        lastName: user[0].lastName, emailId: user[0].emailId,
+                        userId:user[0].id 
                     }
                 }, 'secret', { expiresIn: '1h' });
                 let isPasswordCorrect = await this.comparePassword({password: req.password, hash: user[0].password})
@@ -122,11 +120,16 @@ exports.login = (req) => {
                 }
                
             } else if (user[0].provider == 'google') {
+                
                 if((user[0].password === 'google1234') && req.password) {
                     throw ({ status:"Error",msg:"Please Reset password"})
                 }
+                
                 let token = jwt.sign({
-                    data: { role: user[0].role, firstName:user[0].firstName,lastName: user[0].lastName, emailId: user[0].emailId }
+                    data: { role: user[0].role, firstName:user[0].firstName,
+                        lastName: user[0].lastName, emailId: user[0].emailId,
+                        userId:user[0].id
+                    }
                 }, 'secret', { expiresIn: '1h' });
                 return { role: user[0].role, lastName: user[0].lastName, firstName:user[0].firstName, emailId: user[0].emailId, token: token };
             }
@@ -136,18 +139,12 @@ exports.login = (req) => {
             if(err instanceof Error) { 
                 console.log("Unexpected Error occured",err);
                 throw(err)
-                //throw(err.message)
             }
-            
             throw err;
-             //Promise.reject({ status: "Error", msg: 'unexpected Error in login' })
         }
-
     }
-
+    
     return loginUser()
-
-
 }
 
 exports.insertUser = (req) => {
@@ -157,7 +154,7 @@ exports.insertUser = (req) => {
 
         let hashedPassword = await this.hashPasssword({ password: req.password });
         req.password = hashedPassword;
-        await model.User.insertMany(req)
+        await User.create(req)
 
     }
     return createUser()
