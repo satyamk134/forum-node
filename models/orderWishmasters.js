@@ -12,6 +12,7 @@ module.exports = (sequelize, Sequelize) => {
     static associate(models) {
       // define association here
       OrderWishmaster.belongsTo(models.Order);
+      models.User.hasMany(OrderWishmaster,{foreignKey: 'agentId'})
     }
   };
   OrderWishmaster.init({

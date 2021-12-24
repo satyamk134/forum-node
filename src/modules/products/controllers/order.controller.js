@@ -6,7 +6,7 @@
  * /order/delete
  */
 
- const { request } = require('express');
+ const { request, response } = require('express');
  const mongoose = require('mongoose');
  const db = require("../../../../models");
  const Sequelize = require("sequelize");
@@ -20,7 +20,7 @@
  let User =  db.User;
  let orderDetails = db.OrderDetails; 
 
- let assignOrderForPickup = (req, res)=>{
+let assignOrderForPickup = (req, res)=>{
     //order id and agentId is reqired
 
     let findAgent = ()=>{
@@ -59,6 +59,143 @@
         res.json({msg:"Error in assigning to agent"}).status(400);
     })
 }
+let autoAssign = async (req, res)=>{
+    //order id and agentId is reqired
+    let findAgent =  ()=>{
+        //return the agent with least or not order assigned
+        return User.findOne({
+        
+            attributes: ['id',[Sequelize.fn("COUNT", Sequelize.col("OrderWishmasters.id")), "orderCount"]] 
+            ,
+            where:{
+                role:"wishmaster"
+            }, 
+            include:{model:Transit,attributes:[]},
+            group: ['User.id'],
+            order: [[Sequelize.col("orderCount"), 'ASC']],
+            subQuery:false
+        })
+        .catch(err=>{
+            console.log("Error not able to find the agent",err);
+            return Promise.reject({msg:"Error not able to find the agent!"})
+        })
+    
+    }
+
+    let assignOrder = async (agent)=>{
+        //assign requested order to agent inside Transit table
+        let request = {orderId:req.orderId, agentId:agent.id};
+        try{
+            await Transit.create(request);
+        }catch(err){
+            console.log("Error in assigning the order",err);
+            Promise.reject({msg:'Error in assigning the order!'})
+        }
+        
+
+    }
+
+    try {
+        let agent = await findAgent();
+        if(agent){
+            //agent is found
+            try{
+                let assignStatus = await assignOrder(agent);
+                return res.json({msg:"Successfully auto assigned the agent"}).status(200);
+            }catch(err){
+                return Promise.reject(err);
+            }
+        }
+
+    } catch(err) {
+        console.log("Error is",err);
+        return res.json(err).status(400);
+    }
+    
+    let assignToAgent  = (agentDetails) => {
+        //assign to delivery agent
+
+        /**
+         * req.body obj
+         * 
+         * {
+         *   
+         *   orderId:991
+         *
+         * }
+         */
+         res.json(agentDetails);
+        // let agentInfo = {agentId:agentDetails.id};
+        // Transit.create({...req.body,...agentInfo})
+        // .then(response=>{
+        //     res.json({msg:"order assigned successfully"});
+        // })
+    }
+
+    findAgent()
+    .then(assignToAgent)
+    .catch(err=>{
+        res.json({msg:"Error in assigning to agent"}).status(400);
+    })
+}
+
+let autoAssignService = async (req)=>{
+                //order id and agentId is reqired
+    let findAgent =  ()=>{
+        //return the agent with least or not order assigned
+        return User.findOne({
+        
+            attributes: ['id',[Sequelize.fn("COUNT", Sequelize.col("OrderWishmasters.id")), "orderCount"]] 
+            ,
+            where:{
+                role:"wishmaster"
+            }, 
+            include:{model:Transit,attributes:[]},
+            group: ['User.id'],
+            order: [[Sequelize.col("orderCount"), 'ASC']],
+            subQuery:false
+        })
+        .catch(err=>{
+            console.log("Error not able to find the agent",err);
+            return Promise.reject({msg:"Error not able to find the agent!"})
+        })
+    
+    }
+
+    let assignOrder = async (agent)=>{
+        console.log("agent",req.orderId);
+        //assign requested order to agent inside Transit table
+        let request = {orderId:req.orderId, agentId:agent.id};
+        try{
+            await Transit.create(request);
+            console.log("shoul be created by now");
+        }catch(err){
+            console.log("Error in assigning the order",err);
+            Promise.reject({msg:'Error in assigning the order!'})
+        }
+        
+
+    }
+
+    try {
+        let agent = await findAgent();
+        if(agent){
+            //agent is found
+            try{
+                let assignStatus = await assignOrder(agent);
+                return Promise.resolve({msg:"Successfully auto assigned the agent"});
+            }catch(err){
+                return Promise.reject(err);
+            }
+        }
+
+    } catch(err) {
+        console.log("Error is",err);
+        return Promise.reject(err);
+    }
+
+    
+}
 
 let assignOrderForDelivery = (req, res)=>{
 
@@ -70,7 +207,6 @@ let getAssignedOrder = async  (req, res)=>{
             agentId: req.userInfo.userId
           },
           include:{model:Order,include:[User]},
-          limit: 5,
         });
 
         res.json(orders).status(200);
@@ -138,7 +274,9 @@ let bookPickupSlot = (req, res) => {
     let bookingDetails = req.body;
     console.log(req.userInfo);
     Order.create({...bookingDetails,userId:req.userInfo.userId})
-    .then((resp)=>{
+    .then(async (resp)=>{
+        console.log("reponse is",resp.id);
+        await autoAssignService({orderId:resp.id});
         res.status(200).json({msg:"Great!! Pickup slot booked."});
     })
     .catch(err=>{
@@ -157,6 +295,7 @@ module.exports = {
     addOrderDetails,
     fetchOrderDetails,
     bookPickupSlot,
+    autoAssign,
     test
 }
 

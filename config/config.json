@@ -10,7 +10,7 @@
     "username": "satyam",
     "password": "12345",
     "database": "shoppers",
-    "host": "34.93.126.206",
+    "host": "34.93.52.144",
     "dialect": "mysql"
   },
   "production": {

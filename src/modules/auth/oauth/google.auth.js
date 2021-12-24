@@ -8,19 +8,21 @@ let service = require('./user.service')
 
 
 exports.google = (req, res) => {
-  let redirect_uri = req.get('origin') ? req.get('origin') : 'http://' + req.get('host');
+  console.log("origin",req.get('origin'));
+  console.log("host",req.get('host'))
+  let redirect_uri = req.get('origin') ? req.get('origin') : 'https://' + req.get('host');
   const oauth2Client = new google.auth.OAuth2(
     '63185176944-liii4cl4p1oj30suhi75ouekpdact3jo.apps.googleusercontent.com',
     'asdasasdsada1232',
     redirect_uri
   );
-
+  
   // generate a url that asks permissions for Blogger and Google Calendar scopes
   const scopes = [
     'profile',
     'email',
-    'https://www.googleapis.com/auth/user.addresses.read',
-    'https://www.googleapis.com/auth/user.phonenumbers.read'
+    // 'https://www.googleapis.com/auth/user.addresses.read',
+    // 'https://www.googleapis.com/auth/user.phonenumbers.read'
     // 'https://www.googleapis.com/auth/contacts'
 
   ];
@@ -56,7 +58,7 @@ exports.login = async (req, res) => {
 }
 
 exports.token = async (req, res) => {
-  let redirect_uri = req.get('origin') ? req.get('origin') : 'http://' + req.get('host');
+  let redirect_uri = req.get('origin') ? req.get('origin') : 'https://' + req.get('host');
   console.log("redirect uri", redirect_uri);
   const oauth2Client = new google.auth.OAuth2(
     '63185176944-liii4cl4p1oj30suhi75ouekpdact3jo.apps.googleusercontent.com',

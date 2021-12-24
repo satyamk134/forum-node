@@ -23,16 +23,14 @@ app.use(bodyParser.urlencoded({
     extended: true
 }));
 app.use(bodyParser.json());
-app.use(cors())
 
-
-// app.use(function(req, res, next) {
-//     res.header("Access-Control-Allow-Origin", "*");
-//     res.header("Access-Control-Allow-Origin", "http://localhost:3000")
-//     res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, authorization");
-//     res.header('Access-Control-Allow-Methods', 'PUT, POST, GET, DELETE, OPTIONS');
-//     next();
-// });
+app.use(function(req, res, next) {
+    res.header("Access-Control-Allow-Origin", "*")
+    res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Authorization, Host");
+    res.header('Access-Control-Allow-Methods', 'PUT, POST, GET, DELETE, OPTIONS');
+    res.header('Access-Control-Allow-Credentials', true); 
+    next();
+});
 app.use((req, res,next)=>{
     console.log("path is===>",req.path);
     next()
@@ -82,8 +80,9 @@ app.use('/api',(req,res,next)=>{
             // bar
         });
     }else{
+        //need to handle option preflight request
         let err = {status:"Error",msg:"Invalid Reqest"};
-        res.status(403).json(err)
+        res.status(200).json(err)
     }
 })
 

@@ -18,8 +18,16 @@ exports.create = (user) => {
 
 }
 
-exports.checkEmailExists = (req) => {
-    return User.findAll({ where:{emailId: req.email} }).then(resp => resp.length > 0 ? true : false);
+exports.checkEmailExists = async (req) => {
+    try{
+        let user = await   User.findAll({ where:{emailId: req.email} })
+        if(user && user.length >0){
+            return user;
+        }
+    }catch(err){
+        return Promise.reject({msg:"Not able to find any user with this Email."})
+    }
+   
 
 }
 
@@ -50,12 +58,13 @@ exports.authorise = (tokens) => {
         return decodeToken
     }
 
-    let getUserInfo = (user) => {
+    let getUserInfo = async (user) => {
+        let hashedPassword = await this.hashPasssword({ password: 'google1234' });
         let dbUser = {
             firstName: user.given_name,
             lastName: user.family_name,
             emailId: user.email,
-            password: 'google1234',
+            password: hashedPassword, // encryped for google123
             provider: 'google'
         }
         return dbUser;
@@ -65,20 +74,24 @@ exports.authorise = (tokens) => {
 
         try {
             let decodeTokenInfo = await deodeToken();
-
-            let emailExists = await this.checkEmailExists({ email: decodeTokenInfo.email });
-            console.log("emailExists", emailExists)
-            if (emailExists) {
+            let userExists = await this.checkEmailExists({ email: decodeTokenInfo.email });
+            if (userExists) {
                 //if email exists then log the user in
             } else {
                 //create the user
-                let user = getUserInfo(decodeTokenInfo);
+                let user = await getUserInfo(decodeTokenInfo);
                 console.log(user);
                 await User.create(user)
             }
-            console.log("now go to login")
-            let loginUser = await this.login({ emailId: decodeTokenInfo.email });
-            return loginUser
+            try{
+                let loginUser = await this.login({ emailId: decodeTokenInfo.email, strategy:'google'});
+                return loginUser
+            }catch(err){
+                Promise.reject({msg:"Not able to login the user"});
+            }
+            
+    
+            
 
         } catch (err) {
             console.log("came for erro");
@@ -101,37 +114,34 @@ exports.login = (req) => {
             if(user.length == 0) {
                 throw ({status:"Error",msg: 'User Not found'})
             }
-            
-            if (user[0].provider == 'local') {
-                let token = jwt.sign({
-                    data: { role: user[0].role, firstName:user[0].firstName,
-                        lastName: user[0].lastName, emailId: user[0].emailId,
-                        userId:user[0].id 
-                    }
-                }, 'secret', { expiresIn: '1h' });
-                let isPasswordCorrect = await this.comparePassword({password: req.password, hash: user[0].password})
-                if(isPasswordCorrect) {
-
-                    return { role: user[0].role, lastName: user[0].lastName, 
-                        emailId: user[0].emailId, token: token };
-                
-                } else {
-                    throw ({ status:"Error",msg:"Password is Wrong"})
-                }
-               
-            } else if (user[0].provider == 'google') {
-                
-                if((user[0].password === 'google1234') && req.password) {
-                    throw ({ status:"Error",msg:"Please Reset password"})
-                }
-                
+            if (user[0].provider == 'google' && req.strategy == 'google') {
+    
                 let token = jwt.sign({
                     data: { role: user[0].role, firstName:user[0].firstName,
                         lastName: user[0].lastName, emailId: user[0].emailId,
                         userId:user[0].id
                     }
                 }, 'secret', { expiresIn: '1h' });
-                return { role: user[0].role, lastName: user[0].lastName, firstName:user[0].firstName, emailId: user[0].emailId, token: token };
+                return { role: user[0].role, lastName: user[0].lastName, firstName:user[0].firstName, emailId: user[0].emailId, token: token }; 
+            }else{
+                //local strategy
+                let token = jwt.sign({
+                    data: { role: user[0].role, firstName:user[0].firstName,
+                        lastName: user[0].lastName, emailId: user[0].emailId,
+                        userId:user[0].id 
+                    }
+                }, 'secret', { expiresIn: '1h' });
+
+                let isPasswordCorrect = await this.comparePassword({password: req.password, hash: user[0].password})
+                if(isPasswordCorrect) {
+
+                    return { role: user[0].role, lastName: user[0].lastName, 
+                            emailId: user[0].emailId, token: token 
+                    };
+                } else {
+                    throw ({ status:"Error",msg:"Password is Wrong"});
+                }
+               
             }
 
 
@@ -150,6 +160,7 @@ exports.login = (req) => {
 exports.insertUser = (req) => {
     console.log("insert user data", req);
 
+    
     let createUser = async () => {
 
         let hashedPassword = await this.hashPasssword({ password: req.password });
@@ -173,9 +184,9 @@ exports.hashPasssword = (req) => {
         console.log('hash password is', hash);
         return hash
     })
-        .catch(err => {
-            console.log("Error is", err)
-        })
+    .catch(err => {
+        console.log("Error is", err)
+    })
 
 }
 
