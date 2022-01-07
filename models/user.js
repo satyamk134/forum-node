@@ -17,5 +17,5 @@ module.exports = (sequelize, Sequelize) => {
     provider:{type: Sequelize.STRING},
     
   });
-  return User; 
-};
+  return User;
+};  
