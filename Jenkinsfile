@@ -4,7 +4,7 @@ pipeline {
         stage('build') {
             steps {
                 sh 'node --version'
-                docker.build()
+                sh 'docker build -t satyamk134/laundary-node-app .'
             }
         }
         stage('Test') {
