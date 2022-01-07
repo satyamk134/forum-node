@@ -4,6 +4,7 @@ pipeline {
         stage('build') {
             steps {
                 sh 'node --version'
+                docker.build()
             }
         }
         stage('Test') {
