@@ -1,4 +1,4 @@
- def ImageName = "satyamk134/laundary-nodea-app"
+ def ImageName = "satyamk134/laundary-node-app"
  def Namespace = "default"
  def imageTag = ""
 pipeline {
