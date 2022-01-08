@@ -13,7 +13,7 @@ pipeline {
 		 steps {
 			 git 'https://github.com/satyamk134/forum-node.git'
 		         sh "git rev-parse --short HEAD > .git/commit-id"
-		         imageTag = readFile('.git/commit-id').trim()
+		         imageTag = readFile(file:'.git/commit-id').trim()
 		 }
 	}
         stage('build') {
