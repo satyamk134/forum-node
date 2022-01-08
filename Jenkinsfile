@@ -1,6 +1,6 @@
  def ImageName = "satyamk134/laundary-nodea-app"
  def Namespace = "default"
- def imageTag
+ def imageTag = ""
 pipeline {
    
     agent any
@@ -13,7 +13,6 @@ pipeline {
 		 steps {
 			 git 'https://github.com/satyamk134/forum-node.git'
 		         sh "git rev-parse --short HEAD > .git/commit-id"
-			 pwd
 		         imageTag = readFile('.git/commit-id').trim()
 		 }
 	}
