@@ -6,7 +6,7 @@ pipeline {
     stages {
         stage('build') {
             steps {
-                sh 'docker build -t satyamk134/laundary-node-app .'
+                sh 'docker build -t satyamk134/laundary-node-app-for-fun .'
             }
         }
         stage('Test') {
@@ -25,7 +25,7 @@ pipeline {
 		stage('Push') {
 
 			steps {
-				sh 'docker push satyamk134/laundary-node-app:latest'
+				sh 'docker push satyamk134/laundary-node-app-for-fun:latest'
 			}
 		}
     }
