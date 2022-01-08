@@ -1,5 +1,6 @@
  def ImageName = "satyamk134/laundary-nodea-app"
  def Namespace = "default"
+ def imageTag = ""
 pipeline {
    
     agent any
