@@ -1,6 +1,7 @@
+ def ImageName = "satyamk134/laundary-nodea-app"
+ def Namespace = "default"
 pipeline {
-    def ImageName = "satyamk134/laundary-nodea-app"
-    def Namespace = "default"
+   
     agent any
 	
     environment {
