@@ -12,8 +12,6 @@ pipeline {
 	 stage('Checkout'){
 		 steps {
 			  script {
-				 git 'https://github.com/satyamk134/forum-node.git'
-				 git checkout 'laundry-app-backend'
 				 sh "git rev-parse --short HEAD > .git/commit-id"
 				 imageTag = readFile(file:'.git/commit-id').trim()
 			  }
