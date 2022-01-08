@@ -14,7 +14,7 @@ pipeline {
 			 git 'https://github.com/satyamk134/forum-node.git'
 		         sh "git rev-parse --short HEAD > .git/commit-id"
 			 pwd
-		         def imageTag = readFile('.git/commit-id').trim()
+		         imageTag = readFile('.git/commit-id').trim()
 		 }
 	}
         stage('build') {
