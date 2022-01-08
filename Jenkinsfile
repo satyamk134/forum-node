@@ -9,9 +9,11 @@ pipeline {
 	}
     stages {
 	 stage('Checkout'){
-	      git 'https://mAyman2612@bitbucket.org/mAyman2612/ci-cd-k8s.git'
-	      sh "git rev-parse --short HEAD > .git/commit-id"
-	      imageTag= readFile('.git/commit-id').trim()
+		 steps {
+			 git 'https://mAyman2612@bitbucket.org/mAyman2612/ci-cd-k8s.git'
+		         sh "git rev-parse --short HEAD > .git/commit-id"
+		         imageTag= readFile('.git/commit-id').trim()
+		 }
 	}
         stage('build') {
             steps {
