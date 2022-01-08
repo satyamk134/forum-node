@@ -20,7 +20,7 @@ pipeline {
 	}
         stage('build') {
             steps {
-                sh 'docker build -t ${ImageName}:${imageTag} .'
+                sh 'docker build -t ImageName:imageTag .'
             }
         }
         stage('Test') {
@@ -39,7 +39,7 @@ pipeline {
 		stage('Push') {
 
 			steps {
-				sh 'docker push ${ImageName}'
+				sh 'docker push ImageName
 			}
 		}
     }
