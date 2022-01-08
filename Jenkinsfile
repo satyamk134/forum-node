@@ -10,9 +10,8 @@ pipeline {
     stages {
 	 stage('Checkout'){
 		 steps {
-			 git 'https://mAyman2612@bitbucket.org/mAyman2612/ci-cd-k8s.git'
+			 git 'https://github.com/satyamk134/forum-node.git'
 		         sh "git rev-parse --short HEAD > .git/commit-id"
-			 sh "ls"
 		         def imageTag= readFile('.git/commit-id').trim()
 		 }
 	}
