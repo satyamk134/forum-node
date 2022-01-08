@@ -1,12 +1,20 @@
 pipeline {
+    def ImageName = "satyamk134/laundary-nodea-app"
+    def Namespace = "default"
     agent any
+	
     environment {
 		DOCKERHUB_CREDENTIALS=credentials('docker-cred')
 	}
     stages {
+	 stage('Checkout'){
+	      git 'https://mAyman2612@bitbucket.org/mAyman2612/ci-cd-k8s.git'
+	      sh "git rev-parse --short HEAD > .git/commit-id"
+	      imageTag= readFile('.git/commit-id').trim()
+	}
         stage('build') {
             steps {
-                sh 'docker build -t satyamk134/laundary-node-app .'
+                sh 'docker build -t ${ImageName}:${imageTag} .'
             }
         }
         stage('Test') {
@@ -25,7 +33,7 @@ pipeline {
 		stage('Push') {
 
 			steps {
-				sh 'docker push satyamk134/laundary-node-app:latest'
+				sh 'docker push ${ImageName}'
 			}
 		}
     }
