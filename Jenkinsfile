@@ -11,9 +11,11 @@ pipeline {
     stages {
 	 stage('Checkout'){
 		 steps {
-			 git 'https://github.com/satyamk134/forum-node.git'
-		         sh "git rev-parse --short HEAD > .git/commit-id"
-		         imageTag = readFile(file:'.git/commit-id').trim()
+			  script {
+				 git 'https://github.com/satyamk134/forum-node.git'
+				 sh "git rev-parse --short HEAD > .git/commit-id"
+				 imageTag = readFile(file:'.git/commit-id').trim()
+			  }
 		 }
 	}
         stage('build') {
