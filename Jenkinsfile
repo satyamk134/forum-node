@@ -14,7 +14,6 @@ pipeline {
 			  script {
 				 sh "git rev-parse --short HEAD > .git/commit-id"
 				 imageTag = readFile(file:'.git/commit-id').trim()
-				 sh 'git clone https://github.com/satyamk134/kubernets.git'
 			  }
 		 }
 	}
