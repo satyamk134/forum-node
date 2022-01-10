@@ -11,7 +11,7 @@ pipeline {
 		 steps {
 			  script {
 				 sh "git rev-parse --short HEAD > .git/commit-id"
-				 imageTag =  ${BUILD_NUMBER}
+				 imageTag =  ${env.BUILD_NUMBER}
 			  }
 		 }
 	}
