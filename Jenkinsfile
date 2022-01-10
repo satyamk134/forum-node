@@ -44,7 +44,7 @@ pipeline {
 		}
     	}
 	
-	stage ('Invoke helm pipeline') {
+	stage('Invoke helm pipeline') {
             steps {
                 build job: 'helm-pipeline'
             }
