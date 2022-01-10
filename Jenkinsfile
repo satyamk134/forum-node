@@ -1,6 +1,6 @@
  def ImageName = "satyamk134/laundary-node-app"
  def Namespace = "default"
- def imageTag = ${env.BUILD_NUMBER}
+ def imageTag =  BUILD_NUMBER
 pipeline {
     agent any
     environment {
