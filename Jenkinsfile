@@ -2,9 +2,7 @@
  def Namespace = "default"
  def imageTag = ""
 pipeline {
-   
     agent any
-	
     environment {
 		DOCKERHUB_CREDENTIALS=credentials('docker-cred')
 	}
