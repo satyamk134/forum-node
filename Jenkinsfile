@@ -42,5 +42,11 @@ pipeline {
 				sh "docker push ${ImageName}:${imageTag}"
 			}
 		}
-    }
+    	}
+	
+	stage ('Invoke helm pipeline') {
+            steps {
+                build job: 'helm-pipeline'
+            }
+        }
 } 
