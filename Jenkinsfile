@@ -11,7 +11,7 @@ pipeline {
 		 steps {
 			  script {
 				 sh "git rev-parse --short HEAD > .git/commit-id"
-				 imageTag = readFile(file:'.git/commit-id').trim()
+				 imageTag =  ${BUILD_NUMBER}
 			  }
 		 }
 	}
