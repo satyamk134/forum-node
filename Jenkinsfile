@@ -31,22 +31,23 @@ pipeline {
         
         stage('Login') {
 
-			steps {
-				sh 'echo $DOCKERHUB_CREDENTIALS_PSW | docker login -u $DOCKERHUB_CREDENTIALS_USR --password-stdin'
-			}
+		steps {
+			sh 'echo $DOCKERHUB_CREDENTIALS_PSW | docker login -u $DOCKERHUB_CREDENTIALS_USR --password-stdin'
 		}
+	}
 
-		stage('Push') {
+	stage('Push') {
 
-			steps {
-				sh "docker push ${ImageName}:${imageTag}"
-			}
+		steps {
+			sh "docker push ${ImageName}:${imageTag}"
 		}
+	}
+	    stage('Invoke helm pipeline') {
+		    steps {
+			build job: 'helm-pipeline'
+		    }
+	   }
     	}
 	
-	stage('Invoke helm pipeline') {
-            steps {
-                build job: 'helm-pipeline'
-            }
-        }
+	
 } 
