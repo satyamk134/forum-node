@@ -43,7 +43,7 @@ pipeline {
 	}
 	    stage('Invoke helm pipeline') {
 		    steps {
-			build job: 'helm-pipeline parameters: [string(name: 'docker', value: "green")]'
+			build job: 'helm-pipeline' parameters: [string(name: 'docker', value: "green")]
 		    }
 	   }
     	}
