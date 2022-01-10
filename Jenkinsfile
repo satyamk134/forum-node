@@ -41,7 +41,7 @@ pipeline {
 	}
 	    stage('Invoke helm pipeline') {
 		    steps {
-			    build job: 'helm-chart-frontend', parameters: [string(name: 'dockertag', value: imageTag)]
+			    build job: 'helm-chart-backend', parameters: [string(name: 'dockertag', value: imageTag)]
 		    }
 	   }
     	}
