@@ -1,6 +1,6 @@
  def ImageName = "satyamk134/laundary-node-app"
  def Namespace = "default"
- def imageTag = ""
+ def imageTag = ${env.BUILD_NUMBER}
 pipeline {
     agent any
     environment {
@@ -11,7 +11,7 @@ pipeline {
 		 steps {
 			  script {
 				 sh "git rev-parse --short HEAD > .git/commit-id"
-				 imageTag =  ${env.BUILD_NUMBER}
+			
 			  }
 		 }
 	}
