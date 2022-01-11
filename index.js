@@ -4,7 +4,8 @@ const http = require('http');
 const swaggerUi = require('swagger-ui-express');
 const swaggerDocument = require('./swagger.json');
 
-require('dotenv').config();
+const envConfig = require('./config/index')();
+
 
 // const dbConnection = require('./src/configs/db.connection');
 // const dbConfig = require("./src/configs/db.config.js");
@@ -88,6 +89,7 @@ app.use('/api',(req,res,next)=>{
 
 app.use('/api/chatbot', chatBotApp);
 let productroutes = require('./src/modules/products/routes/index.router');
+const { env } = require('process');
 productroutes(app);
 
 //app.use('/api', productroutes);
