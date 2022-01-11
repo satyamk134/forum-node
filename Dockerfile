@@ -14,6 +14,6 @@ RUN npm install
 
 # Bundle app source
 COPY . .
-
+ENV NODE_ENV=production
 EXPOSE 4343
-CMD ["NODE_ENV=production","node", "index.js" ]
+CMD ["node", "index.js" ]
