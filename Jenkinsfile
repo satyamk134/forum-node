@@ -1,6 +1,6 @@
  def ImageName = "satyamk134/laundary-node-app"
  def Namespace = "default"
- def imageTag = ""
+ def imageTag =  BUILD_NUMBER
 pipeline {
     agent any
     environment {
@@ -11,7 +11,7 @@ pipeline {
 		 steps {
 			  script {
 				 sh "git rev-parse --short HEAD > .git/commit-id"
-				 imageTag = readFile(file:'.git/commit-id').trim()
+			
 			  }
 		 }
 	}
@@ -41,10 +41,9 @@ pipeline {
 	}
 	    stage('Invoke helm pipeline') {
 		    steps {
-			    build job: 'helm-pipeline', parameters: [string(name: 'dockertag', value: imageTag)]
+			    build job: 'helm-chart-backend', parameters: [string(name: 'dockertag', value: imageTag)]
 		    }
 	   }
     	}
-	
-	
+
 } 
