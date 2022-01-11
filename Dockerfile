@@ -16,4 +16,4 @@ RUN npm install
 COPY . .
 
 EXPOSE 4343
-CMD [ "node", "index.js" ]
+CMD ["NODE_ENV=production","node", "index.js" ]
