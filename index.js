@@ -11,7 +11,8 @@ const envConfig = require('./config/index')();
 // const dbConfig = require("./src/configs/db.config.js");
 
 var bodyParser = require('body-parser');
-var jwt = require('jsonwebtoken');
+app.use(bodyParser.json());
+
 
 var cors = require('cors')
 //dbConnection.connectToDb();
@@ -23,7 +24,7 @@ app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerDocument));
 app.use(bodyParser.urlencoded({
     extended: true
 }));
-app.use(bodyParser.json());
+
 
 app.use(function(req, res, next) {
     res.header("Access-Control-Allow-Origin", "*")
@@ -51,41 +52,6 @@ app.use('/api/file',fileDb)
  * add the token for rest of the routes
 */
 
-//uncomment this code if you want to use token
-app.use('/api',(req,res,next)=>{
-    console.log("req path is",req.path);
-    let token = req.headers['x-access-token'] || req.headers['authorization'];
-    if(token){
-        token = token.slice(7, token.length);
-        
-        jwt.verify(token, 'secret', function(err, decoded) {
-            if(err) {
-                console.log("Error",decoded);
-                let err = {status:"err",msg:"Invalid token"}
-                res.status(403).json({err})
-            } else {
-                let date = new Date();
-                if(decoded.exp *1000 < Date.now()){
-                    let err = {status:"Error",msg:"Token Expired"}
-                    res.status(403).json({err})
-                } else {
-                    if(decoded.data)
-                    req.userInfo = decoded.data;
-
-                    //fetch user
-
-                    next()
-                }
-                
-            }
-            // bar
-        });
-    }else{
-        //need to handle option preflight request
-        let err = {status:"Error",msg:"Invalid Reqest"};
-        res.status(200).json(err)
-    }
-})
 
 app.use('/api/chatbot', chatBotApp);
 let productroutes = require('./src/modules/products/routes/index.router');

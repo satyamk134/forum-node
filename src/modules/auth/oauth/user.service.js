@@ -135,8 +135,8 @@ exports.login = (req) => {
                 let isPasswordCorrect = await this.comparePassword({password: req.password, hash: user[0].password})
                 if(isPasswordCorrect) {
 
-                    return { role: user[0].role, lastName: user[0].lastName, 
-                            emailId: user[0].emailId, token: token 
+                    return { role: user[0].role,firstName:user[0].firstName,
+                         lastName: user[0].lastName,emailId: user[0].emailId, token: token 
                     };
                 } else {
                     throw ({ status:"Error",msg:"Password is Wrong"});

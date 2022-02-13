@@ -9,9 +9,9 @@ router.get('/google',googleApi.google);
 
 router.post('/login',validator.validateLogin(),googleApi.login);
 
-router.post('/user',  
-validator.validateUser(),
-googleApi.createUser);
+router.post('/user',  validator.validateUser(),googleApi.createUser);
+router.put('/user', googleApi.updateUser);
+
 
 router.get('/token', googleApi.token)
       .post('/token', googleApi.decodeJwtToken) /**login or create user */
@@ -23,6 +23,11 @@ router.get('/getUserInfo',googleApi.getUserInfo);
 
 router.post('/authorizeUser', googleApi.authorizeUser) /**login or create user */
 
-// router.get('/decode', googleApi.decodeToken)
+router.get('/getAvailableWishmasters',googleApi.getOnlineWishmasters);
+
+router.put('/deliveryPartner',googleApi.updateDeliveryPartner);
+
+router.post('/bookDeliveryPartner',googleApi.bookDeliveryPartner)
+
 
 module.exports = router;

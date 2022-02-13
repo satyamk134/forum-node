@@ -1,7 +1,10 @@
 const { google } = require('googleapis');
 var rp = require('request-promise');
-var jwt = require('jsonwebtoken');
+const  jwt = require('jsonwebtoken');
 let service = require('./user.service')
+const {User,sequelize, Sequelize} = require('../../../../models');
+const { lock } = require('../routes/auth.route');
+
 // Each API may support multiple version. With this sample, we're getting
 // v3 of the blogger API, and using an API key to authenticate.
 
@@ -110,17 +113,6 @@ exports.getUserInfo = (req, res) => {
 
       }
     })
-
-
-
-
-
-
-
-
-
-
-
 }
 
 exports.authorizeUser = (req, res) => {
@@ -146,18 +138,32 @@ exports.createUser = (req, res) => {
 
 }
 
-exports.decodeJwtToken = (req, res) => {
-  let token = req.body.token;
+//this function can be a azure function app
+exports.updateUser = async (req, res) => {
+  console.log("data is",req.body);
+  let {userId} = req.body;
+  try{
+    await User.update({isAvailable:1},{where:{id:userId}});
+    //ack the message message queue
+    res.json({msg:"User set is available"});
+  }catch(err){
+    console.log("Error is",err);
+  }
+}
 
+
+exports.decodeJwtToken = (req, res) => {
+  let token = req.headers['x-access-token'] || req.headers['authorization'];
+  token = token.slice(7, token.length);
+  console.log("token",token);
   jwt.verify(token, 'secret', function (err, decoded) {
     if (err) {
-      console.log("Error", decoded);
       let err = { status: "err", msg: "Invalid token" }
-      res.status(403).json({ err })
+      res.status(200).json({ err });
     } else {
       if (decoded.exp * 1000 < Date.now()) {
         let err = { status: "Error", msg: "Token Expired" };
-        res.status(403).json({ err });
+        res.status(401).json({ err });
       } else {
         if (decoded.data)
           req.userInfo = decoded.data;
@@ -166,4 +172,89 @@ exports.decodeJwtToken = (req, res) => {
       }
     }
   });
+}
+
+exports.getOnlineWishmasters = async (req, res)=>{
+      
+      let query = {
+        where:{role:"wishmaster", isAvailable:1},
+        lock: true,
+
+      };
+        const partners = await sequelize.transaction(async (t) => {
+        const {result} = req.query; 
+        console.log("result",result);
+        if( result == 1){
+          query['limit'] = 1;
+          query['transaction'] = t
+        };
+        let user = await User.findAll(query);
+        let query1= {where:{id:user[0].id}};
+          query1['transaction'] = t
+          query1['lock'] = true;
+        let user2 =  await User.findAll(query1);
+        return user2;
+  
+      });
+
+      
+
+      try{
+          let masters = await partners;
+          res.json(masters);
+      }catch(err){
+        console.log("error is",err);
+      }
+}
+
+exports.bookDeliveryPartner = async (req, res)=>{
+  const {wishmasterId} = req.body;
+
+    const partners = async ()=>{
+      return await sequelize.transaction({isolationLevel: Sequelize.Transaction.ISOLATION_LEVELS.READ_COMMITTED},async t => {
+        let query = {
+          where:{role:"wishmaster", isAvailable:1},
+          transaction:t,
+          lock:true
+        };
+        let user = await User.findOne(query);
+        if(user){
+          let updateQuery = {
+            isAvailable:0
+          }
+          console.log("user is",user.id);
+          await User.update(updateQuery,{where:{id:user.id},transaction:t});
+          return user
+        }else{
+          return Promise.reject("404");
+          //return Promise.resolve({msg:"No parter found"});
+        }
+        
+    
+      });
+    }
+  try{
+    let masters = await partners();
+    return res.status(200).json({data:masters});
+  }catch(err){
+    console.log("error is",err);
+    if(err == 404){
+      return res.status(404).json({"msg":"No delivery partner found"});
+    }
+    res.status(500).json({msg:"Not able to book any delivery partner"});
+  }
+
+}
+
+exports.updateDeliveryPartner = async (req,res)=>{
+  const {wishmasterId, isAvailable} = req.body;
+  try{  
+    await User.update({isAvailable:isAvailable},{where:{id:wishmasterId}});
+    return res.status(200).json({msg:"Staus changed to booked"});
+  }catch(err){
+    console.log("Error in changin status",err);
+    return res.status(500).json({msg:"Not able to change status"});
+  }
+
+  
 }

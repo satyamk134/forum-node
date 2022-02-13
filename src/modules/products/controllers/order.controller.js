@@ -13,12 +13,13 @@
  const { file } = require("googleapis/build/src/apis/file");
  const Tutorial = db.tutorials;
  const Product = db.products;
- const Cart = db.carts;
  const Op = Sequelize.Op;
  let Order = db.Order;
  let Transit = db.OrderWishmaster;
  let User =  db.User;
  let orderDetails = db.OrderDetails; 
+ let Cart = db.Cart; 
+ const MerchantServices = db.MerchantServices;
 
 let assignOrderForPickup = (req, res)=>{
     //order id and agentId is reqired
@@ -284,6 +285,95 @@ let bookPickupSlot = (req, res) => {
     })
 }
 
+let getPlacedOrders = async (req,res)=>{
+
+    let resObj = {
+        data:[],
+        pageNumber:0,
+        rowCount:0,
+    }
+    let offset = parseInt(req.query.pageNumber)*parseInt(req.query.rowCount);
+    let limit  = parseInt(req.query.rowCount);
+    let getOrderHandler = async ()=>{
+        try{            
+            let orders = await Order.findAndCountAll({
+                where:{userId:req.userInfo.userId},
+                include:{model:orderDetails},
+                subQuery: false,
+                offset:offset,
+                limit:limit
+                
+            });
+            return orders;
+        }catch(err){
+            console.log("Error in getting order",err);
+            return Promise.reject({msg:"Error in getting the orders"})
+        }
+        
+
+    }   
+
+    try{
+
+        //resObj.noOfRows = await totalNoOfRows();
+        resObj.data =  await getOrderHandler();
+        resObj.pageNumber = req.query.pageNumber;
+        resObj.eachPageRow = req.query.eachPageRow;
+        res.json(resObj).status(200);
+    }catch(err){
+        
+        res.json({msg:"Error in getting the order"}).json(500);
+    }
+}
+
+let addItemsInCart = async (req,res)=>{
+    let services = req.body.services.map(element=>{
+        return {
+            serviceId:element,
+            userId:req.userInfo.userId,
+        }
+    });
+
+    for(let i=0;i<services.length;i++){
+        let element = services[i];
+        try{
+            let createOrUpdateCart = await  Cart.findOrCreate({
+                where: element
+            });
+        }catch(error){
+            console.log("Error in updating the cart",error);    
+            res.json({msg:"Erro in updating the cart"});
+        }
+
+    }
+    res.json({msg:"Data updated"});
+
+    
+
+
+
+
+
+}
+
+let getCart = async(req, res)=>{
+    let cartInfo = [];
+    try{
+        cartInfo = await  Cart.findAll({
+                where: {userId:req.userInfo.userId},
+                include:{model:MerchantServices ,as: 'merchant', attributes: ['name']}
+
+            });
+    }catch(err){
+        console.log("Error is",err);
+        res.json({msg:"Error in getting the cart details."})
+    }
+
+    res.json({data:cartInfo});
+    
+
+}
+
 let test =(req, res)=>{
     res.send("test called in order, thanks for calling");
 }
@@ -296,6 +386,9 @@ module.exports = {
     fetchOrderDetails,
     bookPickupSlot,
     autoAssign,
+    getPlacedOrders,
+    addItemsInCart,
+    getCart,
     test
 }
 

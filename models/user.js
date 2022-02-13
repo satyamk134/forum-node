@@ -15,7 +15,14 @@ module.exports = (sequelize, Sequelize) => {
     address:{type: Sequelize.STRING},
     mobileNo:{type: Sequelize.STRING},
     provider:{type: Sequelize.STRING},
-    
+    isAvailable:{type:Sequelize.STRING,defaultValue:true},
+  },
+  {
+    indexes:[
+    {
+      unique: false,
+      fields:['isAvailable','role']
+    }]
   });
   return User;
 };  

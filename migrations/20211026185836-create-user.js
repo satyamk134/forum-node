@@ -33,6 +33,9 @@ module.exports = {
       provider:{
         type: Sequelize.STRING
       },
+      isAvailable:{
+        type:Sequelize.STRING
+      },
       createdAt: {
         allowNull: false,
         type: Sequelize.DATE
