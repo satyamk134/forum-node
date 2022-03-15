@@ -3,7 +3,6 @@ var rp = require('request-promise');
 const  jwt = require('jsonwebtoken');
 let service = require('./user.service')
 const {User,sequelize, Sequelize} = require('../../../../models');
-const { lock } = require('../routes/auth.route');
 
 // Each API may support multiple version. With this sample, we're getting
 // v3 of the blogger API, and using an API key to authenticate.

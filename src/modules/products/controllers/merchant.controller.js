@@ -13,11 +13,12 @@
  const fs = require('fs');
  // Imports the Google Cloud client library
  const {Storage} = require('@google-cloud/storage');
+ const MerchantServiceApi = require('../services/MerchantServices');
  const MerchantServices = db.MerchantServices;
  const Merchant = db.Merchant;
  let fetchSerivcesOffered = async (req,res)=>{
 
-    let shopId = req.query.shopId;
+    let shopId = req.params.shopId;
     let fetchMerchant = await Merchant.findOne({where:{id:shopId}});
     let services = await MerchantServices.findAll({where:{merchantId:shopId}});
     res.json({merchant:fetchMerchant,services:services});
@@ -81,17 +82,32 @@
 
  }
 
- let getServiceDetails = async (req, res) => {
-     console.log("req.query",req.query);
+ let getService = async(req, res) => {
     try{
-        let serviceDetails = await MerchantServices.findOne({where:{id:req.query.serviceId}});
+        let serviceDetails = await MerchantServices.findOne({
+            where:{id:req.params.id}
+        });
         //console.log("serviceDetails",serviceDetails);
         return res.json(serviceDetails);
     }catch(err){
+        console.log("error is",err);
         res.status(402).json({"msg":"Not able to find any service"});
     }
  }
 
+ let serviceDetails = async (req, res,next)=>{
+    const  {serviceId} = req.params;
+    console.log("service id is",serviceId);
+    try{
+        let serviceOptions = await MerchantServiceApi.getServiceOptions({serviceId:serviceId});
+        res.json({payload:serviceOptions,"status":"success"}).status(200);
+    }catch(err){
+        console.log("Error is",err);
+        return res.json({msg:"Error in getting the servic options"})
+    }
+    
+    
+ }
 let test =(req, res)=>{
     res.send("test called in merchant");
 }
@@ -104,5 +120,6 @@ module.exports={
     fetchSerivcesOffered,
     getMerchantList,
     uploadMyFile,
-    getServiceDetails
+    getService,
+    serviceDetails
 }

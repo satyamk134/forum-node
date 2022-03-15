@@ -1,20 +1,25 @@
 const express = require('express');
 const router = express.Router();
-const cartRoutes = require('./cart.route');
-const orderRoute = require('./order.route');
 const merchantRoute = require('./merchant.route');
+const walletRoutes = require('./wallet.route');
 const jwt = require('jsonwebtoken');
 
 let routes  = (app)=>{
     console.log("came inside route function");
     // predicate the router with a check and bail out when needed
-    app.use('/api/cart',router, cartRoutes);
-    app.use('/api/order',router, orderRoute);
+    app.use('/api/wallet',router,walletRoutes);
     app.use('/api/merchant',merchantRoute);
 }
 
 router.use((req,res,next)=>{
     console.log("req path is",req.path);
+    const {tokenCheck} = req.body;
+    console.log("came here");
+    if(tokenCheck == false){
+        //bypass token check
+        console.log("token check pass");
+        return next();
+    }
     let token = req.headers['x-access-token'] || req.headers['authorization'];
     if(token){
         token = token.slice(7, token.length);

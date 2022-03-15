@@ -4,6 +4,7 @@ var jwt = require('jsonwebtoken');
 const bcrypt = require('bcryptjs');
 const db = require('../../../../models');
 User = db.User;
+const {Wallets, WalletTranscations} = db;
 exports.create = (user) => {
     /**create user*/
 
@@ -165,7 +166,8 @@ exports.insertUser = (req) => {
 
         let hashedPassword = await this.hashPasssword({ password: req.password });
         req.password = hashedPassword;
-        await User.create(req)
+        let createdUser = await User.create(req);
+        await this.createWallet(createdUser)
 
     }
     return createUser()
@@ -197,6 +199,17 @@ exports.comparePassword = (req)=>{
        console.log("result  of password match is",result);
        return result;
     });  
+}
+
+exports.createWallet = async (req)=>{
+    const {id } = req;
+    let row = {userId:id, balance:0};
+    try{
+        return await Wallets.create(row);
+    }catch(err){
+        res.json({msg:"Error in creating the wallet"});
+    }
+   
 }
 
 

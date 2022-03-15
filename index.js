@@ -63,4 +63,4 @@ productroutes(app);
 app.use(function(req,res){
     res.status(404).json({msg:'Resource Not Found'});
 });
-http.createServer(app).listen(4343);
+http.createServer(app).listen(4001);

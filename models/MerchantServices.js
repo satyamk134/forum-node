@@ -1,4 +1,5 @@
 'use strict';
+const { model } = require('mongoose');
 const {
   Model
 } = require('sequelize');
@@ -11,6 +12,7 @@ module.exports = (sequelize, Sequelize) => {
      */
     static associate(models) {
       // define association here
+      MerchantServices.hasMany(models.MerchantServiceDetails,{foreignKey:'serviceId'});
     }
   };
   MerchantServices.init({
@@ -21,10 +23,12 @@ module.exports = (sequelize, Sequelize) => {
         type: Sequelize.INTEGER
     },
     name : { type: Sequelize.STRING},
-    price: { type: Sequelize.INTEGER},
     unit: { type: Sequelize.STRING},
     tat: { type:Sequelize.STRING},
     available:{ type:Sequelize.BOOLEAN},
+    hasParticulars:{
+      type:Sequelize.BOOLEAN
+    },
     createdAt: {
         allowNull: false,
         type: Sequelize.DATE,

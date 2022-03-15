@@ -9,10 +9,12 @@ module.exports = {
         type: Sequelize.INTEGER
       },
       name : { type: Sequelize.STRING},
-      price: { type: Sequelize.INTEGER},
       unit: { type: Sequelize.STRING},
       tat: { type:Sequelize.STRING},
       available:{ type:Sequelize.BOOLEAN},
+      hasParticulars:{
+        type:Sequelize.BOOLEAN
+      },
       createdAt: {
         allowNull: false,
         type: Sequelize.DATE,
