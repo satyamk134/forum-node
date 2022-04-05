@@ -155,11 +155,112 @@ let  csvToPremiumJson = (req, res)=>{
     
 }
 
+let sqlmigration = (req, res)=>{
+    console.log("came inside ccontroller");
+    let fileData = XLSX.readFile(process.cwd()+"/uploads/"+'explore-v3-premium-sheet.ods', {default:""})
+    let sheetData = XLSX.utils.sheet_to_json(fileData.Sheets[fileData.SheetNames[0]]);
+    let planName = [];
+    let planObj = {
+        "Asia":{'single':1,multi:17,planId:1},
+        "Africa":{'single':2,multi:2, planId:2},
+        "ANZ":{'single':18,multi:18,planId:7},
+        "Europe":{'single':3,multi:3,planId:3},
+        "Worldwide - Silver":{'single':5,multi:8,planId:5},
+        " Worldwide - Gold":{'single':6,multi:9,planId:5},
+        "Worldwide- Platinum":{'single':7,multi:10,planId:5},
+        "WW excl US/CAN- Silver":{'single':11,multi:14,planId:6},
+        " WW excl US/CAN- Gold":{'single':12,multi:15,planId:6},
+        "WW excl US/CAN- Platinum":{'single':13,multi:16,planId:6},
+        "Canada +":{'single':4,multi:4,planId:4},
+        
+        
+    }
+    
+    let premiumData = [];
+    for(let i=0;i<sheetData.length;i++){
+        if(!planName.includes(sheetData[i]['Plan Name'])){
+            planName.push(sheetData[i]['Plan Name']);
+        }
+        let planId = {planId: planObj[sheetData[i]['Plan Name']]};
+
+        /**
+         * check for trip type as single or multiple
+        */
+
+        let otherDetailsForPremium = {};
+        if(sheetData[i]['Trip Type'].trim() == 'Single'){
+            console.log("came for single");
+            otherDetailsForPremium['tripType']= 'Single';
+            otherDetailsForPremium['planCode'] = planObj[sheetData[i]['Plan Name']][sheetData[i]['Trip Type'].toLowerCase()];
+            otherDetailsForPremium['planType'] = planObj[sheetData[i]['Plan Name']]['planId'];
+         }else{
+            //mult-trip
+            otherDetailsForPremium['tripType']= 'Multi';
+            otherDetailsForPremium['planCode'] = planObj[sheetData[i]['Plan Name']]['multi'];
+            otherDetailsForPremium['planType'] = planObj[sheetData[i]['Plan Name']]['planId'];
+        }
+
+
+        /**
+         * logic for min and max age
+        */
+
+        if(sheetData[i]['Age Band']=='<40'){
+            otherDetailsForPremium['minAge'] = 0;
+            otherDetailsForPremium['maxAge'] = 40;
+        }else if(sheetData[i]['Age Band']=='>85'){
+            otherDetailsForPremium['minAge'] = 86;
+            otherDetailsForPremium['maxAge'] = 99;
+        }else{
+            let ages = sheetData[i]['Age Band'].split('-');
+            otherDetailsForPremium['minAge'] = ages[0].trim();
+            otherDetailsForPremium['maxAge'] = ages[1].trim();
+
+        }
+        otherDetailsForPremium['coverType'] = 'Individual';
+        sheetData[i] = {...sheetData[i],...otherDetailsForPremium};
+        console.log(sheetData[i]);
+        let keys = [
+        'Age Band','minAge','maxAge','planType','planCode',
+        'Plan Name','Sum Insured','coverType',
+        'tripType','Term',' Base Premium'
+        ];
+        // let eachRow = [];
+        // keys.forEach(element => {
+        //     eachRow.push(sheetData[i][element]);
+        // });
+        let tableColObj = {
+        'ageGroup':sheetData[i]['Age Band'], 
+         minAge :sheetData[i]['minAge'],
+         maxAge:sheetData[i]['maxAge'], 
+         planType:sheetData[i]['planType'],
+         planCode:sheetData[i]['planCode'], 
+         planName:sheetData[i]['Plan Name'],
+         sumInsured:sheetData[i]['Sum Insured'], 
+         coverType:sheetData[i]['coverType'],
+         tripType:sheetData[i]['tripType'],
+         days:sheetData[i]['Term'],
+         premium:sheetData[i]['with PED']
+        }
+        premiumData.push(tableColObj);
+
+
+        
+        
+        //if(i==900)break;
+        
+
+    }
+    res.json({sheetData:premiumData,count:premiumData.length});
+    
+}
+
 module.exports =  {
     insertUsers,
     classTest,
     fetchUsers,
     addProducts,
     slugcsv,
-    csvToPremiumJson
+    csvToPremiumJson,
+    sqlmigration
 }

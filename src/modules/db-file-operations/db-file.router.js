@@ -14,6 +14,8 @@ router.post('/addProducts',dbFileController.addProducts)
 
 router.post('/slugcsv', dbFileController.slugcsv);
 
-router.post('/csvToPremiumJson', dbFileController.csvToPremiumJson)
+router.post('/csvToPremiumJson', dbFileController.csvToPremiumJson);
+
+router.post('/sqlmigration', dbFileController.sqlmigration)
 
 module.exports = router
