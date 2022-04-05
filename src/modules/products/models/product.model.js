@@ -21,7 +21,7 @@ exports.Product = mongoose.model('Product', ProductSchema);
 
 var CartSchema = new Schema({
       userId:{ type:Schema.ObjectId },
-      products:[],
+      products:[{count:{type:Number, default:1},productId:Schema.ObjectId}],
       lastVisited:{type:Date, value:Date.now},
 
 },{ _id : false,versionKey: false  });

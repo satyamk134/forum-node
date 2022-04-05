@@ -1,16 +1,20 @@
-FROM node:13.3.0 AS compile-image
+FROM node:16
 
-RUN npm install -g yarn
+# Create app directory
+WORKDIR /usr/src/app
 
-WORKDIR /opt/ng
-COPY .npmrc package.json yarn.lock ./
-RUN yarn install
+# Install app dependencies
+# A wildcard is used to ensure both package.json AND package-lock.json are copied
+# where available (npm@5+)
+COPY package*.json ./
 
-ENV PATH="./node_modules/.bin:$PATH" 
+RUN npm install
+# If you are building your code for production
+# RUN npm ci --only=production
 
-COPY . ./
-RUN ng build --prod
-
-FROM nginx
-COPY docker/nginx/default.conf /etc/nginx/conf.d/default.conf
-COPY --from=compile-image /opt/ng/dist/app-name /usr/share/nginx/html
+# Bundle app source
+COPY . .
+ARG environment=development
+ENV NODE_ENV=$environment
+EXPOSE 4001
+CMD ["node", "index.js" ]

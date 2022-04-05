@@ -1,7 +1,8 @@
 const mongoose = require('mongoose');
+const mysql = require('mysql');
 // const config = require('../configs/db.config');
 
-exports.connectToDb = ()=>{
+connectToDb = ()=>{
     /**
      * For local 
     */
@@ -25,3 +26,24 @@ exports.connectToDb = ()=>{
         console.log("DB connection is disconneted",err)
     });
 }
+
+const mysqlConnection = mysql.createConnection({
+    host: process.env.DB_HOST,
+    user: process.env.DB_USER,
+    
+    password: process.env.DB_PASS,
+    database: 'shoppers'
+    
+  });
+  
+  mysqlConnection.connect((err) => {
+    if (err) throw err;
+    console.log('Connected! to mysql');
+  });
+
+  module.exports = {
+    connectToDb,
+    mysqlConnection
+
+  }
+
