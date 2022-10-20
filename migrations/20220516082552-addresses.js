@@ -8,28 +8,28 @@ module.exports = {
      * Example:
      * await queryInterface.createTable('users', { id: Sequelize.INTEGER });
      */
-    await queryInterface.createTable('MerchantServiceDetails', {
+    await queryInterface.createTable('Addresses', {
       id: {
         allowNull: false,
         autoIncrement: true,
         primaryKey: true,
         type: Sequelize.INTEGER
       },
-      serviceId: { type: Sequelize.INTEGER, 
+      firstName:{ type:Sequelize.STRING },
+      lastName:{ type:Sequelize.STRING },
+      address:{ type:Sequelize.STRING },
+      city:{ type:Sequelize.STRING },
+      pincode:{ type:Sequelize.STRING },
+      mobileNumber:{ type:Sequelize.STRING },
+      userId: {
+        type: Sequelize.INTEGER,
         references: {
-          model: 'MerchantServices', // 'Movies' would also work
-          key: 'id'
+            model: 'Users', // 'Movies' would also work
+            key: 'id'
         },
         onDelete: 'cascade',
         onUpdate: 'cascade'
-      }, //(debit | credit)
-      cloth:{type:Sequelize.STRING}, //shirt, pant, jeans
-      unit:{
-        type:   Sequelize.ENUM,
-        values: ['PER_KG', 'PER_ITEM']
-      }, //kg, peice
-      price: { type: Sequelize.INTEGER }, //(card|account)
-      discount:{type:Sequelize.INTEGER, defaultValue:0},
+      },
       createdAt: {
         allowNull: false,
         type: Sequelize.DATE,
@@ -51,6 +51,6 @@ module.exports = {
      * Example:
      * await queryInterface.dropTable('MerchantServiceDetails');
      */
-     await queryInterface.dropTable('MerchantServiceDetails');
+     await queryInterface.dropTable('Addresses');
   }
 };

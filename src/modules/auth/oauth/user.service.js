@@ -4,7 +4,9 @@ var jwt = require('jsonwebtoken');
 const bcrypt = require('bcryptjs');
 const db = require('../../../../models');
 User = db.User;
-const {Wallets, WalletTranscations} = db;
+const { Wallets, WalletTranscations } = db;
+const customErrs = require('../../../error-handlers/handle-error')
+const {APIError, Http400Error, AUTHError, EmptyError} = customErrs;
 exports.create = (user) => {
     /**create user*/
 
@@ -20,15 +22,15 @@ exports.create = (user) => {
 }
 
 exports.checkEmailExists = async (req) => {
-    try{
-        let user = await   User.findAll({ where:{emailId: req.email} })
-        if(user && user.length >0){
+    try {
+        let user = await User.findAll({ where: { emailId: req.email } })
+        if (user && user.length > 0) {
             return user;
         }
-    }catch(err){
-        return Promise.reject({msg:"Not able to find any user with this Email."})
+    } catch (err) {
+        return Promise.reject({ msg: "Not able to find any user with this Email." })
     }
-   
+
 
 }
 
@@ -45,7 +47,7 @@ exports.decodeToken = (req) => {
 exports.authorise = (tokens) => {
 
 
-    console.log("tokens",tokens);
+    console.log("tokens", tokens);
     let deodeToken = async () => {
         var options = {
             uri: 'https://oauth2.googleapis.com/tokeninfo',
@@ -84,15 +86,15 @@ exports.authorise = (tokens) => {
                 console.log(user);
                 await User.create(user)
             }
-            try{
-                let loginUser = await this.login({ emailId: decodeTokenInfo.email, strategy:'google'});
+            try {
+                let loginUser = await this.login({ emailId: decodeTokenInfo.email, strategy: 'google' });
                 return loginUser
-            }catch(err){
-                Promise.reject({msg:"Not able to login the user"});
+            } catch (err) {
+                Promise.reject({ msg: "Not able to login the user" });
             }
-            
-    
-            
+
+
+
 
         } catch (err) {
             console.log("came for erro");
@@ -108,60 +110,68 @@ exports.login = (req) => {
       google login will have already jwt 
       if using local method then we have to generate the jwt
     */
-   
+
     let loginUser = async () => {
         try {
-            let user = await User.findAll({ where:{emailId: req.emailId }})
-            if(user.length == 0) {
-                throw ({status:"Error",msg: 'User Not found'})
+            let user = await User.findAll({ where: { emailId: req.emailId } })
+            if (user.length == 0) {
+                throw new customErrs.NotFoundError('NOT_FOUND',404,'Please check email or password', false)
             }
             if (user[0].provider == 'google' && req.strategy == 'google') {
-    
+
                 let token = jwt.sign({
-                    data: { role: user[0].role, firstName:user[0].firstName,
+                    data: {
+                        role: user[0].role, firstName: user[0].firstName,
                         lastName: user[0].lastName, emailId: user[0].emailId,
-                        userId:user[0].id
+                        userId: user[0].id
                     }
                 }, 'secret', { expiresIn: '1h' });
-                return { role: user[0].role, lastName: user[0].lastName, firstName:user[0].firstName, emailId: user[0].emailId, token: token }; 
-            }else{
+                return {
+                    role: user[0].role,
+                    lastName: user[0].lastName,
+                    firstName: user[0].firstName,
+                    emailId: user[0].emailId,
+                    token: token,
+                    provider:user[0].provider
+                };
+            } else {
                 //local strategy
                 let token = jwt.sign({
-                    data: { role: user[0].role, firstName:user[0].firstName,
-                        lastName: user[0].lastName, emailId: user[0].emailId,
-                        userId:user[0].id 
+                    data: {
+                        role: user[0].role,
+                        firstName: user[0].firstName,
+                        lastName: user[0].lastName,
+                        emailId: user[0].emailId,
+                        userId: user[0].id
                     }
                 }, 'secret', { expiresIn: '1h' });
 
-                let isPasswordCorrect = await this.comparePassword({password: req.password, hash: user[0].password})
-                if(isPasswordCorrect) {
-
-                    return { role: user[0].role,firstName:user[0].firstName,
-                         lastName: user[0].lastName,emailId: user[0].emailId, token: token 
+                let isPasswordCorrect = await this.comparePassword({ password: req.password, hash: user[0].password })
+                if (isPasswordCorrect) {
+                    return {
+                        role: user[0].role,
+                        firstName: user[0].firstName,
+                        lastName: user[0].lastName,
+                        emailId: user[0].emailId,
+                        provider: user[0].provider,
+                        token: token
                     };
                 } else {
-                    throw ({ status:"Error",msg:"Password is Wrong"});
+                    throw new customErrs.NotFoundError('NOT_FOUND',404,'Please check email or password', false)
                 }
-               
             }
-
-
         } catch (err) {
-            if(err instanceof Error) { 
-                console.log("Unexpected Error occured",err);
-                throw(err)
-            }
             throw err;
         }
     }
-    
+
     return loginUser()
 }
 
 exports.insertUser = (req) => {
     console.log("insert user data", req);
 
-    
+
     let createUser = async () => {
 
         let hashedPassword = await this.hashPasssword({ password: req.password });
@@ -186,30 +196,30 @@ exports.hashPasssword = (req) => {
         console.log('hash password is', hash);
         return hash
     })
-    .catch(err => {
-        console.log("Error is", err)
-    })
+        .catch(err => {
+            console.log("Error is", err)
+        })
 
 }
 
-exports.comparePassword = (req)=>{
-    console.log("compare password req is"+JSON.stringify(req))
-    return bcrypt.compare(req.password, req.hash).then(function(result) {
-       //return false
-       console.log("result  of password match is",result);
-       return result;
-    });  
+exports.comparePassword = (req) => {
+    console.log("compare password req is" + JSON.stringify(req))
+    return bcrypt.compare(req.password, req.hash).then(function (result) {
+        //return false
+        console.log("result  of password match is", result);
+        return result;
+    });
 }
 
-exports.createWallet = async (req)=>{
-    const {id } = req;
-    let row = {userId:id, balance:0};
-    try{
+exports.createWallet = async (req) => {
+    const { id } = req;
+    let row = { userId: id, balance: 0 };
+    try {
         return await Wallets.create(row);
-    }catch(err){
-        res.json({msg:"Error in creating the wallet"});
+    } catch (err) {
+        res.json({ msg: "Error in creating the wallet" });
     }
-   
+
 }
 
 

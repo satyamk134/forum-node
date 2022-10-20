@@ -29,5 +29,4 @@ router.put('/deliveryPartner',googleApi.updateDeliveryPartner);
 
 router.post('/bookDeliveryPartner',googleApi.bookDeliveryPartner)
 
-
 module.exports = router;

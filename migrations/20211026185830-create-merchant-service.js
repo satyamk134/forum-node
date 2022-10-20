@@ -15,11 +15,7 @@ module.exports = {
       hasParticulars:{
         type:Sequelize.BOOLEAN
       },
-      createdAt: {
-        allowNull: false,
-        type: Sequelize.DATE,
-        defaultValue: new Date()
-      },
+      price: { type: Sequelize.INTEGER },
       merchantId:{
         type:Sequelize.INTEGER,
         references: {
@@ -28,6 +24,11 @@ module.exports = {
         },
         onDelete: 'cascade',
         onUpdate: 'cascade'
+      },
+      createdAt: {
+        allowNull: false,
+        type: Sequelize.DATE,
+        defaultValue: new Date()
       },
       updatedAt: {
         allowNull: false,

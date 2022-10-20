@@ -44,15 +44,14 @@ exports.google = (req, res) => {
 /**
  * login user
  */
-exports.login = async (req, res) => {
+exports.login = async (req, res,next) => {
   try {
     let response = await service.login({ emailId: req.body.emailId, password: req.body.password })
     return res.json({ status: "success", data: response });
   } catch (err) {
-    if (err instanceof Error) {
-      res.status(500).json({ status: 'Error', msg: err.message })
-    }
-    res.status(403).send( err )
+    
+    //name, httpCode, isOperational = true, description
+    next(err)
   }
 
 
@@ -121,7 +120,7 @@ exports.authorizeUser = (req, res) => {
   console.log("token is", token);
 
   return service.authorise({ id_token: token, access_token: '' })
-    .then(resp => { res.json({ status: "user authorised", data: resp }) })
+  .then(resp => { res.json({ status: "user authorised", data: resp }) })
 
 
 }
@@ -207,8 +206,6 @@ exports.getOnlineWishmasters = async (req, res)=>{
 }
 
 exports.bookDeliveryPartner = async (req, res)=>{
-  const {wishmasterId} = req.body;
-
     const partners = async ()=>{
       return await sequelize.transaction({isolationLevel: Sequelize.Transaction.ISOLATION_LEVELS.READ_COMMITTED},async t => {
         let query = {
@@ -221,24 +218,21 @@ exports.bookDeliveryPartner = async (req, res)=>{
           let updateQuery = {
             isAvailable:0
           }
-          console.log("user is",user.id);
           await User.update(updateQuery,{where:{id:user.id},transaction:t});
           return user
         }else{
           return Promise.reject("404");
-          //return Promise.resolve({msg:"No parter found"});
         }
-        
-    
       });
     }
   try{
     let masters = await partners();
-    return res.status(200).json({data:masters});
+    return res.status(200).json({data:masters,status:"PARTNER_BOOKED"});
   }catch(err){
     console.log("error is",err);
     if(err == 404){
-      return res.status(404).json({"msg":"No delivery partner found"});
+      console.log("yes came here");
+      return res.status(200).json({"msg":"No delivery partner found",status:"PARTNER_BUSY"});
     }
     res.status(500).json({msg:"Not able to book any delivery partner"});
   }
