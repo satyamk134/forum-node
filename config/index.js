@@ -5,7 +5,6 @@ module.exports = function(){
         case 'production':
             console.log("inside prod case");
             return require('dotenv').config({path:'./.env.prod'});
-
         default:
             return require('dotenv').config({path:'./.env'});
     }
