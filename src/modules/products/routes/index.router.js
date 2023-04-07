@@ -22,7 +22,9 @@ router.use((req,res,next) => {
         return next();
     }
     let token = req.headers['x-access-token'] || req.headers['authorization'];
+    console.log("token is",token);
     if(token){
+        console.log("came inside if")
         token = token.slice(7, token.length);
         jwt.verify(token, 'secret', function(err, decoded) {
             if(err) {

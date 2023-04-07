@@ -45,7 +45,6 @@ app.use('/api/file',fileDb)
 
 app.use('/api/chatbot', chatBotApp);
 let productroutes = require('./src/modules/products/routes/index.router');
-const { env } = require('process');
 productroutes(app);
 
 //app.use('/api', productroutes);

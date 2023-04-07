@@ -1,8 +1,8 @@
 const { google } = require('googleapis');
 var rp = require('request-promise');
-const  jwt = require('jsonwebtoken');
+const jwt = require('jsonwebtoken');
 let service = require('./user.service')
-const {User,sequelize, Sequelize} = require('../../../../models');
+const { User, sequelize, Sequelize } = require('../../../../models');
 
 // Each API may support multiple version. With this sample, we're getting
 // v3 of the blogger API, and using an API key to authenticate.
@@ -10,15 +10,15 @@ const {User,sequelize, Sequelize} = require('../../../../models');
 
 
 exports.google = (req, res) => {
-  console.log("origin",req.get('origin'));
-  console.log("host",req.get('host'))
+  console.log("origin", req.get('origin'));
+  console.log("host", req.get('host'))
   let redirect_uri = req.get('origin') ? req.get('origin') : 'https://' + req.get('host');
   const oauth2Client = new google.auth.OAuth2(
     '63185176944-liii4cl4p1oj30suhi75ouekpdact3jo.apps.googleusercontent.com',
     'asdasasdsada1232',
     redirect_uri
   );
-  
+
   // generate a url that asks permissions for Blogger and Google Calendar scopes
   const scopes = [
     'profile',
@@ -44,12 +44,12 @@ exports.google = (req, res) => {
 /**
  * login user
  */
-exports.login = async (req, res,next) => {
+exports.login = async (req, res, next) => {
   try {
     let response = await service.login({ emailId: req.body.emailId, password: req.body.password })
     return res.json({ status: "success", data: response });
   } catch (err) {
-    
+
     //name, httpCode, isOperational = true, description
     next(err)
   }
@@ -120,7 +120,7 @@ exports.authorizeUser = (req, res) => {
   console.log("token is", token);
 
   return service.authorise({ id_token: token, access_token: '' })
-  .then(resp => { res.json({ status: "user authorised", data: resp }) })
+    .then(resp => { res.json({ status: "user authorised", data: resp }) })
 
 
 }
@@ -131,21 +131,21 @@ exports.name = (req, res) => {
 
 exports.createUser = (req, res) => {
   service.insertUser(req.body)
-  .then(response => res.json({ status: 'sucess', msg: 'User is Created' }))
-  .catch(err=>{res.status(500).json({msg:"Not able to create user, Please try again."})});
+    .then(response => res.json({ status: 'sucess', msg: 'User is Created' }))
+    .catch(err => { res.status(500).json({ msg: "Not able to create user, Please try again." }) });
 
 }
 
 //this function can be a azure function app
 exports.updateUser = async (req, res) => {
-  console.log("data is",req.body);
-  let {userId} = req.body;
-  try{
-    await User.update({isAvailable:1},{where:{id:userId}});
+  console.log("data is", req.body);
+  let { userId } = req.body;
+  try {
+    await User.update({ isAvailable: 1 }, { where: { id: userId } });
     //ack the message message queue
-    res.json({msg:"User set is available"});
-  }catch(err){
-    console.log("Error is",err);
+    res.json({ msg: "User set is available" });
+  } catch (err) {
+    console.log("Error is", err);
   }
 }
 
@@ -153,7 +153,7 @@ exports.updateUser = async (req, res) => {
 exports.decodeJwtToken = (req, res) => {
   let token = req.headers['x-access-token'] || req.headers['authorization'];
   token = token.slice(7, token.length);
-  console.log("token",token);
+  console.log("token", token);
   jwt.verify(token, 'secret', function (err, decoded) {
     if (err) {
       let err = { status: "err", msg: "Invalid token" }
@@ -172,82 +172,82 @@ exports.decodeJwtToken = (req, res) => {
   });
 }
 
-exports.getOnlineWishmasters = async (req, res)=>{
-      
+exports.getOnlineWishmasters = async (req, res) => {
+
+  let query = {
+    where: { role: "wishmaster", isAvailable: 1 },
+    lock: true,
+
+  };
+  const partners = await sequelize.transaction(async (t) => {
+    const { result } = req.query;
+    console.log("result", result);
+    if (result == 1) {
+      query['limit'] = 1;
+      query['transaction'] = t
+    };
+    let user = await User.findAll(query);
+    let query1 = { where: { id: user[0].id } };
+    query1['transaction'] = t
+    query1['lock'] = true;
+    let user2 = await User.findAll(query1);
+    return user2;
+
+  });
+
+
+
+  try {
+    let masters = await partners;
+    res.json(masters);
+  } catch (err) {
+    console.log("error is", err);
+  }
+}
+
+exports.bookDeliveryPartner = async (_req, res) => {
+  const partners = async () => {
+    return await sequelize.transaction({ isolationLevel: Sequelize.Transaction.ISOLATION_LEVELS.READ_COMMITTED }, async t => {
       let query = {
-        where:{role:"wishmaster", isAvailable:1},
-        lock: true,
-
+        where: { role: "wishmaster", isAvailable: 1 },
+        transaction: t,
+        lock: true
       };
-        const partners = await sequelize.transaction(async (t) => {
-        const {result} = req.query; 
-        console.log("result",result);
-        if( result == 1){
-          query['limit'] = 1;
-          query['transaction'] = t
-        };
-        let user = await User.findAll(query);
-        let query1= {where:{id:user[0].id}};
-          query1['transaction'] = t
-          query1['lock'] = true;
-        let user2 =  await User.findAll(query1);
-        return user2;
-  
-      });
-
-      
-
-      try{
-          let masters = await partners;
-          res.json(masters);
-      }catch(err){
-        console.log("error is",err);
-      }
-}
-
-exports.bookDeliveryPartner = async (req, res)=>{
-    const partners = async ()=>{
-      return await sequelize.transaction({isolationLevel: Sequelize.Transaction.ISOLATION_LEVELS.READ_COMMITTED},async t => {
-        let query = {
-          where:{role:"wishmaster", isAvailable:1},
-          transaction:t,
-          lock:true
-        };
-        let user = await User.findOne(query);
-        if(user){
-          let updateQuery = {
-            isAvailable:0
-          }
-          await User.update(updateQuery,{where:{id:user.id},transaction:t});
-          return user
-        }else{
-          return Promise.reject("404");
+      let user = await User.findOne(query);
+      if (user) {
+        let updateQuery = {
+          isAvailable: 0
         }
-      });
-    }
-  try{
+        await User.update(updateQuery, { where: { id: user.id }, transaction: t });
+        return user
+      } else {
+        return Promise.reject("404");
+      }
+    });
+  }
+  try {
     let masters = await partners();
-    return res.status(200).json({data:masters,status:"PARTNER_BOOKED"});
-  }catch(err){
-    console.log("error is",err);
-    if(err == 404){
+    return res.status(200).json({ data: masters, status: "PARTNER_BOOKED" });
+  } catch (err) {
+    console.log("error is", err);
+    if (err == 404) {
       console.log("yes came here");
-      return res.status(200).json({"msg":"No delivery partner found",status:"PARTNER_BUSY"});
+      return res.status(200).json({ "msg": "No delivery partner found", status: "PARTNER_BUSY" });
     }
-    res.status(500).json({msg:"Not able to book any delivery partner"});
+    res.status(500).json({ msg: "Not able to book any delivery partner" });
   }
 
 }
 
-exports.updateDeliveryPartner = async (req,res)=>{
-  const {wishmasterId, isAvailable} = req.body;
-  try{  
-    await User.update({isAvailable:isAvailable},{where:{id:wishmasterId}});
-    return res.status(200).json({msg:"Staus changed to booked"});
-  }catch(err){
-    console.log("Error in changin status",err);
-    return res.status(500).json({msg:"Not able to change status"});
+exports.updateDeliveryPartner = async (req, res) => {
+  const { wishmasterId, isAvailable } = req.body;
+  try {
+    await User.update({ isAvailable: isAvailable }, { where: { id: wishmasterId } });
+    return res.status(200).json({ msg: "Staus changed to booked" });
+  } catch (err) {
+    console.log("Error in changin status", err);
+    return res.status(500).json({ msg: "Not able to change status" });
   }
 
-  
+
 }
